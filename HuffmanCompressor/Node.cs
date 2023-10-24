@@ -12,21 +12,43 @@ namespace HuffmanCompressor
         private Node<T> right;
         private T? value;
 
-        public Node()
+        public Node(T value)
         {
-            left = null;
-            right = null;
-            value = default(T);
+            this.left = null;
+            this.right = null;
+            this.value = value;
+        }
+
+        public Node(Node<T> left, Node<T> right)
+        {
+            this.left = left;
+            this.right = right;
         }
 
         public Node<T> GetLeft()
         {
-            throw new NotImplementedException();
+            return this.left;
         }
 
         public Node<T> GetRight()
         {
-            throw new NotImplementedException();
+            return this.right;
         }
+
+        public bool IsLeafNode
+        {
+            get
+            {
+                return left == null && right == null;
+            }
+        }
+
+        public T? Value
+        { 
+            get
+            {
+                return value;
+            }
+         }
     }
 }
