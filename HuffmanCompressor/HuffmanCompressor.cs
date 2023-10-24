@@ -8,8 +8,8 @@ namespace HuffmanCompressor
 {
     internal class HuffmanCompressor : IFileCompressor
     {
-        private IDictionary<byte, int> frequencies;
-        private IDictionary<byte, string> mappings;
+        private readonly IDictionary<byte, int> frequencies;
+        private readonly IDictionary<byte, string> mappings;
         private Node<byte> treeRoot;
 
         public HuffmanCompressor()
@@ -23,7 +23,7 @@ namespace HuffmanCompressor
         {
             this.InitializeFrequencyDictionary(inputFilePath);
             this.BuildTree();
-            this.BuildMappings();
+            this.BuildBinaryCodeMappings();
             this.WriteOutput(inputFilePath, outputFilePath);
         }
 
@@ -80,21 +80,31 @@ namespace HuffmanCompressor
                 priorityQueue.Enqueue(new Node<byte>(leftNode, rightNode), leftPriority + rightPriority);
             }
 
-            treeRoot = priorityQueue.Dequeue();
+            // Protect against case where the input file was empty, and therefore there were never any nodes in the priority queue
+            if (priorityQueue.Count > 0)
+            {
+                treeRoot = priorityQueue.Dequeue();
+            }
         }
 
-        private void BuildMappings()
+        private void BuildBinaryCodeMappings()
         {
+            // Base case: empty input file means there is no binary tree, so nothing to do.
+            if (treeRoot == null)
+            {
+                return;
+            }
+            
             // Initialize all the keys in one shot for more efficiency
             for (int i = 0; i < 256; i++)
             {
                 mappings.Add(((byte)i), string.Empty);
             }
 
-            BuildMappings(treeRoot, string.Empty);
+            BuildBinaryCodeMappings(treeRoot, string.Empty);
         }
 
-        private void BuildMappings(Node<byte> node, string binaryCode)
+        private void BuildBinaryCodeMappings(Node<byte> node, string binaryCode)
         {
             if (node.IsLeafNode)
             {
@@ -102,8 +112,9 @@ namespace HuffmanCompressor
                 return;
             }
 
-            BuildMappings(node.GetLeft(), $"{binaryCode}0");
-            BuildMappings(node.GetRight(), $"{binaryCode}1");
+            // Left node gets tagged with 0, right node gets tagged with 1
+            BuildBinaryCodeMappings(node.GetLeft(), $"{binaryCode}0");
+            BuildBinaryCodeMappings(node.GetRight(), $"{binaryCode}1");
         }
 
         private void SerializeFrequencyDictionary()
@@ -142,14 +153,14 @@ namespace HuffmanCompressor
                 throw new Exception("Null filestream!");
             }
 
+            var bitWriter = new BitWriter(outputStream);
             int inputByte;
             while ((inputByte = inputStream.ReadByte()) != -1)
             {
-                var text = mappings[(byte)inputByte];
-                byte[] info = new UTF8Encoding(true).GetBytes(text);
-                outputStream.Write(info, 0, info.Length);
+                bitWriter.WriteBits(mappings[(byte)inputByte]);
             }
 
+            bitWriter.Flush();
             inputStream.Close();
             outputStream.Close();
         }
