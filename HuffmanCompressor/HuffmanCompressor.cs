@@ -8,18 +8,9 @@ namespace HuffmanCompressor
 {
     internal class HuffmanCompressor : IFileCompressor
     {
-        private readonly IDictionary<byte, int> frequencies;
-        private readonly IDictionary<byte, string> mappings;
-        private int numberDistinctBytes;
+        private IDictionary<byte, UInt32> frequencies;
+        private IDictionary<byte, string> mappings;
         private Node<byte> treeRoot;
-
-        public HuffmanCompressor()
-        {
-            this.frequencies = new Dictionary<byte, int>(capacity: 256);
-            this.mappings = new Dictionary<byte, string>(capacity: 256);
-            this.numberDistinctBytes = 0;
-            this.treeRoot = null;
-        }
 
         void IFileCompressor.Compress(string inputFilePath, string outputFilePath)
         {
@@ -31,17 +22,13 @@ namespace HuffmanCompressor
 
         void IFileCompressor.Decompress(string inputFilePath, string outputFilePath)
         {
-            throw new NotImplementedException();
+            this.ReadFrequencyDictionary(inputFilePath);
+            this.BuildTree();
+            this.BuildBinaryCodeMappings();
         }
 
         private void InitializeFrequencyDictionary(string inputFilePath)
         {
-            // Initialize all the keys in one shot for more efficiency
-            for (int i = 0; i < 256; i++)
-            {
-                this.frequencies.Add(((byte)i), 0);
-            }
-
             FileStream inputStream = null;
             try
             {
@@ -57,10 +44,20 @@ namespace HuffmanCompressor
                 throw new Exception("Null filestream!");
             }
 
+            this.frequencies = new Dictionary<byte, UInt32>(capacity: 256);
             int inputByte;
+            // -1 represents end of stream, otherwise byte cast as int
             while ((inputByte = inputStream.ReadByte()) != -1)
             {
-                this.frequencies[(byte)inputByte]++;
+                byte nativeByte = (byte)inputByte;
+                if (!this.frequencies.ContainsKey(nativeByte))
+                {
+                    this.frequencies.Add(nativeByte, 1);
+                }
+                else
+                {
+                    this.frequencies[nativeByte]++;
+                }
             }
 
             inputStream.Close();
@@ -69,22 +66,18 @@ namespace HuffmanCompressor
         private void BuildTree()
         {
             // Use a MinHeap priority queue, creating a node with the byte, and the frequency as priority
-            var priorityQueue = new PriorityQueue<Node<byte>, int>(initialCapacity: 256);
+            var priorityQueue = new PriorityQueue<Node<byte>, UInt32>(initialCapacity: 256);
             foreach (var kvp in frequencies)
             {
-                if (kvp.Value > 0)
-                {
-                    this.numberDistinctBytes++;
-                    priorityQueue.Enqueue(new Node<byte>(kvp.Key), kvp.Value);
-                }
+                priorityQueue.Enqueue(new Node<byte>(kvp.Key), kvp.Value);
             }
 
             // Take the 2 nodes at the head of the queue (lowest frequency) and combine into a new node
             // The tree is complete when there is only 1 node left
             while (priorityQueue.Count > 1)
             {
-                priorityQueue.TryDequeue(out var leftNode, out int leftPriority);
-                priorityQueue.TryDequeue(out var rightNode, out int rightPriority);
+                priorityQueue.TryDequeue(out var leftNode, out UInt32 leftPriority);
+                priorityQueue.TryDequeue(out var rightNode, out UInt32 rightPriority);
                 priorityQueue.Enqueue(new Node<byte>(leftNode, rightNode), leftPriority + rightPriority);
             }
 
@@ -102,12 +95,8 @@ namespace HuffmanCompressor
             {
                 return;
             }
-            
-            // Initialize all the keys in one shot for more efficiency
-            for (int i = 0; i < 256; i++)
-            {
-                this.mappings.Add(((byte)i), string.Empty);
-            }
+
+            this.mappings = new Dictionary<byte, string>(capacity: this.frequencies.Count);
 
             BuildBinaryCodeMappings(this.treeRoot, string.Empty);
         }
@@ -116,13 +105,13 @@ namespace HuffmanCompressor
         {
             if (node.IsLeafNode)
             {
-                this.mappings[node.Value] = binaryCode;
+                this.mappings.Add(node.Value, binaryCode);
                 return;
             }
 
             // Left node gets tagged with 0, right node gets tagged with 1
-            BuildBinaryCodeMappings(node.GetLeft(), $"{binaryCode}0");
-            BuildBinaryCodeMappings(node.GetRight(), $"{binaryCode}1");
+            this.BuildBinaryCodeMappings(node.GetLeft(), $"{binaryCode}0");
+            this.BuildBinaryCodeMappings(node.GetRight(), $"{binaryCode}1");
         }
 
         private void WriteOutput(string inputFilePath, string outputFilePath)
@@ -174,21 +163,55 @@ namespace HuffmanCompressor
         /// <summary>
         /// Writes the frequency dictionary to the output file so that the binary tree can be rebuilt to decompress the file.
         /// As an optimization, we only write frequencies for the bytes that were present in the input file.
+        /// Note, the binary code mappings could be used as an alternate way to decode the file, but it would consume more disk space than the frequencies table
+        /// defeating the purpose of an efficient compression algorithm.
         /// </summary>
         /// <param name="outputStream"></param>
         private void WriteFrequencyDictionary(FileStream outputStream)
         {
             var writer = new BinaryWriter(outputStream);
-            writer.Write(numberDistinctBytes);
-            foreach (var kvp in frequencies)
+
+            // frequency count can be 256 at most, so we need 2 bytes at most
+            writer.Write((ushort)this.frequencies.Count);
+            foreach (var kvp in this.frequencies)
             {
-                if (kvp.Value > 0)
-                {
-                    writer.Write(kvp.Key);
-                    writer.Write(kvp.Value);
-                }
+                writer.Write(kvp.Key);
+                writer.Write(kvp.Value);
             }
             writer.Flush();
+        }
+
+        private void ReadFrequencyDictionary(string inputFilePath)
+        {
+            FileStream inputStream = null;
+            try
+            {
+                inputStream = File.OpenRead(inputFilePath);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception opening input file: {e.Message}");
+            }
+
+            if (inputStream == null)
+            {
+                throw new Exception("Null filestream!");
+            }
+
+            var reader = new BinaryReader(inputStream);
+            var frequencyCount = reader.ReadUInt16();
+            if (frequencyCount < 0 || frequencyCount > 256)
+            {
+                throw new ArgumentOutOfRangeException($"Invalid frequency count {frequencyCount} in input file");
+            }
+
+            this.frequencies = new Dictionary<byte, UInt32>(capacity: frequencyCount);
+            for (int i = 0; i < frequencyCount; i++)
+            {
+                var key = reader.ReadByte();
+                var value = reader.ReadUInt32();
+                this.frequencies.Add(key, value);
+            }
         }
     }
 }

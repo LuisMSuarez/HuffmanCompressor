@@ -29,7 +29,6 @@
         public void WriteBits(string bitString)
         {
             ArgumentNullException.ThrowIfNull(bitString);
-            ArgumentNullException.ThrowIfNull(fileHandle);
 
             // Fill in currentByte from most significant bit to least significant bit by reading from input bitString
             // until the input bitString is exhausted.
