@@ -14,9 +14,10 @@
         /// </summary>
         /// <param name="fileHandle">File stream to which the writer will write bits to</param>
         public BitWriter(FileStream fileHandle) 
-        { 
+        {
+            ArgumentNullException.ThrowIfNull(fileHandle);
             this.bitIndex = 0;
-            this.currentByte = 0;
+            this.currentByte = 0x00;
             this.fileHandle = fileHandle;
         }
 
@@ -53,7 +54,7 @@
                 if (bitIndex == 7)
                 {
                     // currentByte has been exhausted for all of its 8 available bits
-                    // commit to disk and mint a new byte to continue the process
+                    // commit to disk and mint a new byte to continue the process.
                     fileHandle.WriteByte(currentByte);
                     bitIndex = 0;
                     currentByte = 0;

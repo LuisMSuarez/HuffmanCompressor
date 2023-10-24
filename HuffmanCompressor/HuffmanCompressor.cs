@@ -10,16 +10,18 @@ namespace HuffmanCompressor
     {
         private readonly IDictionary<byte, int> frequencies;
         private readonly IDictionary<byte, string> mappings;
+        private int numberDistinctBytes;
         private Node<byte> treeRoot;
 
         public HuffmanCompressor()
         {
-            frequencies = new Dictionary<byte, int>(capacity: 256);
-            mappings = new Dictionary<byte, string>(capacity: 256);
+            this.frequencies = new Dictionary<byte, int>(capacity: 256);
+            this.mappings = new Dictionary<byte, string>(capacity: 256);
+            this.numberDistinctBytes = 0;
             this.treeRoot = null;
         }
 
-        public void Compress(string inputFilePath, string outputFilePath)
+        void IFileCompressor.Compress(string inputFilePath, string outputFilePath)
         {
             this.InitializeFrequencyDictionary(inputFilePath);
             this.BuildTree();
@@ -27,12 +29,17 @@ namespace HuffmanCompressor
             this.WriteOutput(inputFilePath, outputFilePath);
         }
 
+        void IFileCompressor.Decompress(string inputFilePath, string outputFilePath)
+        {
+            throw new NotImplementedException();
+        }
+
         private void InitializeFrequencyDictionary(string inputFilePath)
         {
             // Initialize all the keys in one shot for more efficiency
             for (int i = 0; i < 256; i++)
             {
-                frequencies.Add(((byte)i), 0);
+                this.frequencies.Add(((byte)i), 0);
             }
 
             FileStream inputStream = null;
@@ -53,7 +60,7 @@ namespace HuffmanCompressor
             int inputByte;
             while ((inputByte = inputStream.ReadByte()) != -1)
             {
-                frequencies[(byte)inputByte]++;
+                this.frequencies[(byte)inputByte]++;
             }
 
             inputStream.Close();
@@ -67,6 +74,7 @@ namespace HuffmanCompressor
             {
                 if (kvp.Value > 0)
                 {
+                    this.numberDistinctBytes++;
                     priorityQueue.Enqueue(new Node<byte>(kvp.Key), kvp.Value);
                 }
             }
@@ -83,14 +91,14 @@ namespace HuffmanCompressor
             // Protect against case where the input file was empty, and therefore there were never any nodes in the priority queue
             if (priorityQueue.Count > 0)
             {
-                treeRoot = priorityQueue.Dequeue();
+                this.treeRoot = priorityQueue.Dequeue();
             }
         }
 
         private void BuildBinaryCodeMappings()
         {
             // Base case: empty input file means there is no binary tree, so nothing to do.
-            if (treeRoot == null)
+            if (this.treeRoot == null)
             {
                 return;
             }
@@ -98,27 +106,23 @@ namespace HuffmanCompressor
             // Initialize all the keys in one shot for more efficiency
             for (int i = 0; i < 256; i++)
             {
-                mappings.Add(((byte)i), string.Empty);
+                this.mappings.Add(((byte)i), string.Empty);
             }
 
-            BuildBinaryCodeMappings(treeRoot, string.Empty);
+            BuildBinaryCodeMappings(this.treeRoot, string.Empty);
         }
 
         private void BuildBinaryCodeMappings(Node<byte> node, string binaryCode)
         {
             if (node.IsLeafNode)
             {
-                mappings[node.Value] = binaryCode;
+                this.mappings[node.Value] = binaryCode;
                 return;
             }
 
             // Left node gets tagged with 0, right node gets tagged with 1
             BuildBinaryCodeMappings(node.GetLeft(), $"{binaryCode}0");
             BuildBinaryCodeMappings(node.GetRight(), $"{binaryCode}1");
-        }
-
-        private void SerializeFrequencyDictionary()
-        {
         }
 
         private void WriteOutput(string inputFilePath, string outputFilePath)
@@ -153,16 +157,38 @@ namespace HuffmanCompressor
                 throw new Exception("Null filestream!");
             }
 
+            this.WriteFrequencyDictionary(outputStream);
+
             var bitWriter = new BitWriter(outputStream);
             int inputByte;
             while ((inputByte = inputStream.ReadByte()) != -1)
             {
-                bitWriter.WriteBits(mappings[(byte)inputByte]);
+                bitWriter.WriteBits(this.mappings[(byte)inputByte]);
             }
 
             bitWriter.Flush();
             inputStream.Close();
             outputStream.Close();
+        }
+
+        /// <summary>
+        /// Writes the frequency dictionary to the output file so that the binary tree can be rebuilt to decompress the file.
+        /// As an optimization, we only write frequencies for the bytes that were present in the input file.
+        /// </summary>
+        /// <param name="outputStream"></param>
+        private void WriteFrequencyDictionary(FileStream outputStream)
+        {
+            var writer = new BinaryWriter(outputStream);
+            writer.Write(numberDistinctBytes);
+            foreach (var kvp in frequencies)
+            {
+                if (kvp.Value > 0)
+                {
+                    writer.Write(kvp.Key);
+                    writer.Write(kvp.Value);
+                }
+            }
+            writer.Flush();
         }
     }
 }
