@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HuffmanCompressor": {
+      "commandName": "Project",
+      "commandLineArgs": "inflate .\\output.bin .\\deco.txt"
+    }
+  }
+}

@@ -20,12 +20,12 @@ namespace HuffmanCompressor
             this.Compress(inputFilePath, outputFilePath);
         }
 
-        void IFileCompressor.Decompress(string inputFilePath, string outputFilePath)
+        void IFileCompressor.Inflate(string inputFilePath, string outputFilePath)
         {
             var inputStream = this.ReadFrequencyDictionary(inputFilePath);
             this.BuildTree();
             this.BuildBinaryCodeMappings();
-            this.Decompress(inputStream, outputFilePath);
+            this.Inflate(inputStream, outputFilePath);
         }
 
         private void InitializeFrequencyDictionary(string inputFilePath)
@@ -218,7 +218,7 @@ namespace HuffmanCompressor
             return inputStream;
         }
 
-        private void Decompress(FileStream inputStream, string outputFilePath)
+        private void Inflate(FileStream inputStream, string outputFilePath)
         {
             FileStream outputStream = null;
             try
