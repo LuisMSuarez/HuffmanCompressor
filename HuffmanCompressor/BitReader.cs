@@ -13,10 +13,10 @@
         /// Creates an instance of <see cref="BitReader"/> class
         /// </summary>
         /// <param name="fileHandle">File stream to which the reader will read bits from</param>
-        public BitReader(FileStream fileHandle) 
+        public BitReader(FileStream fileHandle)
         {
             ArgumentNullException.ThrowIfNull(fileHandle);
-            this.bitIndex = 0;
+            this.bitIndex = 8;
             this.currentByte = 0x00;
             this.fileHandle = fileHandle;
         }
@@ -30,7 +30,16 @@
         {
             // Read 1 byte from the input file stream at a time, and use an index to return each bit
             // When we get to the last bit, read the next byte and continue until end of file
-            throw new NotImplementedException();
+            if (this.bitIndex >= 8)
+            {
+                this.currentByte = (byte)this.fileHandle.ReadByte();
+                this.bitIndex = 0;
+            }
+
+            byte mask = (byte)(0x80 >> this.bitIndex++);
+            return (this.currentByte & mask) == 0x00
+                ? '0' 
+                : '1';
         }
     }
 }

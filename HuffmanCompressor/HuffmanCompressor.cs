@@ -9,7 +9,7 @@ namespace HuffmanCompressor
     internal class HuffmanCompressor : IFileCompressor
     {
         private IDictionary<byte, UInt32> frequencies;
-        private IDictionary<byte, string> mappings;
+        private IDictionary<byte, string> binaryCodeMappings;
         private Node<byte> treeRoot;
 
         void IFileCompressor.Compress(string inputFilePath, string outputFilePath)
@@ -17,14 +17,15 @@ namespace HuffmanCompressor
             this.InitializeFrequencyDictionary(inputFilePath);
             this.BuildTree();
             this.BuildBinaryCodeMappings();
-            this.WriteOutput(inputFilePath, outputFilePath);
+            this.Compress(inputFilePath, outputFilePath);
         }
 
         void IFileCompressor.Decompress(string inputFilePath, string outputFilePath)
         {
-            this.ReadFrequencyDictionary(inputFilePath);
+            var inputStream = this.ReadFrequencyDictionary(inputFilePath);
             this.BuildTree();
             this.BuildBinaryCodeMappings();
+            this.Decompress(inputStream, outputFilePath);
         }
 
         private void InitializeFrequencyDictionary(string inputFilePath)
@@ -96,7 +97,7 @@ namespace HuffmanCompressor
                 return;
             }
 
-            this.mappings = new Dictionary<byte, string>(capacity: this.frequencies.Count);
+            this.binaryCodeMappings = new Dictionary<byte, string>(capacity: this.frequencies.Count);
 
             BuildBinaryCodeMappings(this.treeRoot, string.Empty);
         }
@@ -105,7 +106,7 @@ namespace HuffmanCompressor
         {
             if (node.IsLeafNode)
             {
-                this.mappings.Add(node.Value, binaryCode);
+                this.binaryCodeMappings.Add(node.Value, binaryCode);
                 return;
             }
 
@@ -114,7 +115,7 @@ namespace HuffmanCompressor
             this.BuildBinaryCodeMappings(node.GetRight(), $"{binaryCode}1");
         }
 
-        private void WriteOutput(string inputFilePath, string outputFilePath)
+        private void Compress(string inputFilePath, string outputFilePath)
         {
             FileStream inputStream = null;
             try
@@ -152,7 +153,7 @@ namespace HuffmanCompressor
             int inputByte;
             while ((inputByte = inputStream.ReadByte()) != -1)
             {
-                bitWriter.WriteBits(this.mappings[(byte)inputByte]);
+                bitWriter.WriteBits(this.binaryCodeMappings[(byte)inputByte]);
             }
 
             bitWriter.Flush();
@@ -181,7 +182,7 @@ namespace HuffmanCompressor
             writer.Flush();
         }
 
-        private void ReadFrequencyDictionary(string inputFilePath)
+        private FileStream ReadFrequencyDictionary(string inputFilePath)
         {
             FileStream inputStream = null;
             try
@@ -212,6 +213,50 @@ namespace HuffmanCompressor
                 var value = reader.ReadUInt32();
                 this.frequencies.Add(key, value);
             }
+
+            // Hand off the input stream to the next steps of decompression so they continue reading after the frequency dictionary header
+            return inputStream;
+        }
+
+        private void Decompress(FileStream inputStream, string outputFilePath)
+        {
+            FileStream outputStream = null;
+            try
+            {
+                outputStream = File.OpenWrite(outputFilePath);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception opening output file: {e.Message}");
+            }
+
+            if (outputStream == null)
+            {
+                throw new Exception("Null filestream!");
+            }
+
+            var bitReader = new BitReader(inputStream);
+            var numBytes = this.frequencies.Values.Aggregate((a, b) => a + b);
+            for (int i = 0; i < numBytes; i++)
+            {
+                var bitString = string.Empty;
+                var binaryCodeMatch = false;
+                while (!binaryCodeMatch)
+                {
+                    var bit = bitReader.ReadNextBit();
+                    bitString = $"{bitString}{bit}";
+                    var mapping = this.binaryCodeMappings.FirstOrDefault(kvp => kvp.Value.Equals(bitString));
+                    if (string.Equals(mapping.Value, bitString, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // A matching pattern in the binary code mappings is found, write the corresponding byte to the output
+                        outputStream.WriteByte(mapping.Key);
+                        binaryCodeMatch = true;
+                    }
+                }
+            }
+
+            outputStream.Close();
+            inputStream.Close();
         }
     }
 }

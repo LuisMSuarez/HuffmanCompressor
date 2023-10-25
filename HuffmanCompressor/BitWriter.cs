@@ -56,7 +56,7 @@
                     // commit to disk and mint a new byte to continue the process.
                     fileHandle.WriteByte(currentByte);
                     bitIndex = 0;
-                    currentByte = 0;
+                    currentByte = 0x00;
                 }
                 else
                 {
