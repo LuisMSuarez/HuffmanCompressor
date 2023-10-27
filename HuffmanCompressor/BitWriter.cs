@@ -10,9 +10,9 @@
         private readonly FileStream fileHandle;
 
         /// <summary>
-        /// Creates an instance of <see cref="BitWriter"/> class
+        /// Creates an instance of <see cref="BitWriter"/> class.
         /// </summary>
-        /// <param name="fileHandle">File stream to which the writer will write bits to</param>
+        /// <param name="fileHandle">File stream to which the writer will write bits to.</param>
         public BitWriter(FileStream fileHandle) 
         {
             ArgumentNullException.ThrowIfNull(fileHandle);
@@ -22,10 +22,10 @@
         }
 
         /// <summary>
-        /// Writes bits to the output file
+        /// Writes bits to the output file.
         /// </summary>
-        /// <param name="bitString">String of bits, only 0 and 1 are supported</param>
-        /// <exception cref="ArgumentException">In case the bit string contains unsupported characters</exception>
+        /// <param name="bitString">String of bits, only 0 and 1 are supported.</param>
+        /// <exception cref="ArgumentException">In case the bit string contains unsupported characters.</exception>
         public void WriteBits(string bitString)
         {
             ArgumentNullException.ThrowIfNull(bitString);
