@@ -2,7 +2,7 @@
   "profiles": {
     "HuffmanCompressor": {
       "commandName": "Project",
-      "commandLineArgs": "inflate .\\output.bin .\\deco.txt"
+      "commandLineArgs": "compress .\\input.txt .\\output.bin"
     }
   }
 }

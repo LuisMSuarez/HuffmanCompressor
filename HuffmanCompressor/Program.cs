@@ -2,6 +2,18 @@
 {
     public static class Program
     {
+        private static IFileCompressor _compressor;
+
+        internal static void SetCompressorReference(IFileCompressor compressor)
+        {
+            _compressor = compressor;
+        }
+
+        static Program()
+        {
+            _compressor = new HuffmanCompressor();
+        }
+        
         public static void Main(string[] args)
         {
             const string usageString = "Usage: [compress|inflate] [input file path] [output file path]";
@@ -12,18 +24,17 @@
                 return;
             }
 
-            IFileCompressor compressor = new HuffmanCompressor();
             switch (args[0].ToLower())
             {
                 case "compress":
-                    compressor.Compress(args[1], args[2]);
+                    _compressor.Compress(args[1], args[2]);
                     break;
                 case "inflate":
-                    compressor.Inflate(args[1], args[2]);
+                    _compressor.Inflate(args[1], args[2]);
                     break;
                 default:
                     Console.WriteLine(usageString);
-                    break;
+                    throw new ArgumentException(usageString);
             }
         }
     }

@@ -8,8 +8,8 @@ namespace HuffmanCompressor
 {
     internal class Node<T>
     {
-        private Node<T> left;
-        private Node<T> right;
+        private Node<T>? left;
+        private Node<T>? right;
         private T? value;
 
         public Node(T value)
@@ -25,12 +25,12 @@ namespace HuffmanCompressor
             this.right = right;
         }
 
-        public Node<T> GetLeft()
+        public Node<T>? GetLeft()
         {
             return this.left;
         }
 
-        public Node<T> GetRight()
+        public Node<T>? GetRight()
         {
             return this.right;
         }

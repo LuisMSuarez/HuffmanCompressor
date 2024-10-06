@@ -8,9 +8,9 @@ namespace HuffmanCompressor
 {
     internal class HuffmanCompressor : IFileCompressor
     {
-        private IDictionary<byte, UInt32> frequencies;
-        private IDictionary<byte, string> binaryCodeMappings;
-        private Node<byte> treeRoot;
+        private IDictionary<byte, UInt32>? frequencies;
+        private IDictionary<byte, string>? binaryCodeMappings;
+        private Node<byte>? treeRoot;
 
         void IFileCompressor.Compress(string inputFilePath, string outputFilePath)
         {
@@ -30,7 +30,7 @@ namespace HuffmanCompressor
 
         private void InitializeFrequencyDictionary(string inputFilePath)
         {
-            FileStream inputStream = null;
+            FileStream inputStream;
             try
             {
                 inputStream = File.OpenRead(inputFilePath);
@@ -38,11 +38,7 @@ namespace HuffmanCompressor
             catch (Exception e)
             {
                 Console.WriteLine($"Exception opening file: {e.Message}");
-            }
-
-            if (inputStream == null)
-            {
-                throw new Exception("Null filestream!");
+                throw;
             }
 
             this.frequencies = new Dictionary<byte, UInt32>(capacity: 256);
@@ -68,7 +64,7 @@ namespace HuffmanCompressor
         {
             // Use a MinHeap priority queue, creating a node with the byte, and the frequency as priority
             var priorityQueue = new PriorityQueue<Node<byte>, UInt32>(initialCapacity: 256);
-            foreach (var kvp in frequencies)
+            foreach (var kvp in frequencies!)
             {
                 priorityQueue.Enqueue(new Node<byte>(kvp.Key), kvp.Value);
             }
@@ -79,7 +75,7 @@ namespace HuffmanCompressor
             {
                 priorityQueue.TryDequeue(out var leftNode, out UInt32 leftPriority);
                 priorityQueue.TryDequeue(out var rightNode, out UInt32 rightPriority);
-                priorityQueue.Enqueue(new Node<byte>(leftNode, rightNode), leftPriority + rightPriority);
+                priorityQueue.Enqueue(new Node<byte>(leftNode!, rightNode!), leftPriority + rightPriority);
             }
 
             // Protect against case where the input file was empty, and therefore there were never any nodes in the priority queue
@@ -97,7 +93,7 @@ namespace HuffmanCompressor
                 return;
             }
 
-            this.binaryCodeMappings = new Dictionary<byte, string>(capacity: this.frequencies.Count);
+            this.binaryCodeMappings = new Dictionary<byte, string>(capacity: this.frequencies!.Count);
 
             BuildBinaryCodeMappings(this.treeRoot, string.Empty);
         }
@@ -106,18 +102,18 @@ namespace HuffmanCompressor
         {
             if (node.IsLeafNode)
             {
-                this.binaryCodeMappings.Add(node.Value, binaryCode);
+                this.binaryCodeMappings!.Add(node.Value, binaryCode);
                 return;
             }
 
             // Left node gets tagged with 0, right node gets tagged with 1
-            this.BuildBinaryCodeMappings(node.GetLeft(), $"{binaryCode}0");
-            this.BuildBinaryCodeMappings(node.GetRight(), $"{binaryCode}1");
+            this.BuildBinaryCodeMappings(node.GetLeft()!, $"{binaryCode}0");
+            this.BuildBinaryCodeMappings(node.GetRight()!, $"{binaryCode}1");
         }
 
         private void Compress(string inputFilePath, string outputFilePath)
         {
-            FileStream inputStream = null;
+            FileStream inputStream;
             try
             {
                 inputStream = File.OpenRead(inputFilePath);
@@ -125,14 +121,10 @@ namespace HuffmanCompressor
             catch (Exception e)
             {
                 Console.WriteLine($"Exception opening input file: {e.Message}");
+                throw;
             }
 
-            if (inputStream == null)
-            {
-                throw new Exception("Null filestream!");
-            }
-
-            FileStream outputStream = null;
+            FileStream outputStream;
             try
             {
                 outputStream = File.OpenWrite(outputFilePath);
@@ -140,11 +132,7 @@ namespace HuffmanCompressor
             catch (Exception e)
             {
                 Console.WriteLine($"Exception opening output file: {e.Message}");
-            }
-
-            if (outputStream == null)
-            {
-                throw new Exception("Null filestream!");
+                throw;
             }
 
             this.WriteFrequencyDictionary(outputStream);
@@ -153,7 +141,7 @@ namespace HuffmanCompressor
             int inputByte;
             while ((inputByte = inputStream.ReadByte()) != -1)
             {
-                bitWriter.WriteBits(this.binaryCodeMappings[(byte)inputByte]);
+                bitWriter.WriteBits(this.binaryCodeMappings![(byte)inputByte]);
             }
 
             bitWriter.Flush();
@@ -173,7 +161,7 @@ namespace HuffmanCompressor
             var writer = new BinaryWriter(outputStream);
 
             // frequency count can be 256 at most, so we need 2 bytes at most
-            writer.Write((ushort)this.frequencies.Count);
+            writer.Write((ushort)this.frequencies!.Count);
             foreach (var kvp in this.frequencies)
             {
                 writer.Write(kvp.Key);
@@ -184,7 +172,7 @@ namespace HuffmanCompressor
 
         private FileStream ReadFrequencyDictionary(string inputFilePath)
         {
-            FileStream inputStream = null;
+            FileStream inputStream;
             try
             {
                 inputStream = File.OpenRead(inputFilePath);
@@ -192,11 +180,7 @@ namespace HuffmanCompressor
             catch (Exception e)
             {
                 Console.WriteLine($"Exception opening input file: {e.Message}");
-            }
-
-            if (inputStream == null)
-            {
-                throw new Exception("Null filestream!");
+                throw;
             }
 
             var reader = new BinaryReader(inputStream);
@@ -220,7 +204,7 @@ namespace HuffmanCompressor
 
         private void Inflate(FileStream inputStream, string outputFilePath)
         {
-            FileStream outputStream = null;
+            FileStream outputStream;
             try
             {
                 outputStream = File.OpenWrite(outputFilePath);
@@ -228,18 +212,14 @@ namespace HuffmanCompressor
             catch (Exception e)
             {
                 Console.WriteLine($"Exception opening output file: {e.Message}");
-            }
-
-            if (outputStream == null)
-            {
-                throw new Exception("Null filestream!");
+                throw;
             }
 
             // For decompression, we key off binary codes to obtain the corresponding byte, which is the opposite to what we do in compression.
             // This ensures that lookup for decompression has constant time complexity.
-            var reverseBinaryCodeMappings = this.binaryCodeMappings.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+            var reverseBinaryCodeMappings = this.binaryCodeMappings!.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
             var bitReader = new BitReader(inputStream);
-            var numBytes = this.frequencies.Values.Aggregate((a, b) => a + b);
+            var numBytes = this.frequencies!.Values.Aggregate((a, b) => a + b);
             for (int i = 0; i < numBytes; i++)
             {
                 var bitString = string.Empty;
