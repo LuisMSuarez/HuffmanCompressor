@@ -21,7 +21,7 @@
             if (args.Length != 3)
             {
                 Console.WriteLine(usageString);
-                return;
+                throw new ArgumentException(usageString);
             }
 
             switch (args[0].ToLower())
