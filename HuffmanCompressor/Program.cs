@@ -4,16 +4,20 @@
     {
         private static IFileCompressor _compressor;
 
-        internal static void SetCompressorReference(IFileCompressor compressor)
-        {
-            _compressor = compressor;
-        }
-
         static Program()
         {
             _compressor = new HuffmanCompressor();
         }
-        
+
+        /// <summary>
+        /// Internal method intended for the unit tests to be able to inject a mock interface for testing purposes.
+        /// </summary>
+        /// <param name="compressor">Instance of the compressor interface.</param>
+        internal static void SetCompressorReference(IFileCompressor compressor)
+        {
+            _compressor = compressor;
+        }
+    
         public static void Main(string[] args)
         {
             const string usageString = "Usage: [compress|inflate] [input file path] [output file path]";
