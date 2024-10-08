@@ -217,9 +217,11 @@ namespace HuffmanCompressor
 
             // For decompression, we key off binary codes to obtain the corresponding byte, which is the opposite to what we do in compression.
             // This ensures that lookup for decompression has constant time complexity.
-            var reverseBinaryCodeMappings = this.binaryCodeMappings!.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+            var reverseBinaryCodeMappings = this.binaryCodeMappings?.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
             var bitReader = new BitReader(inputStream);
-            var numBytes = this.frequencies!.Values.Aggregate((a, b) => a + b);
+            var numBytes = this.frequencies!.Values.Count > 0 
+                ? this.frequencies!.Values.Aggregate((a, b) => a + b)
+                : 0;
             for (int i = 0; i < numBytes; i++)
             {
                 var bitString = string.Empty;
@@ -228,7 +230,7 @@ namespace HuffmanCompressor
                 {
                     var bit = bitReader.ReadNextBit();
                     bitString = $"{bitString}{bit}";
-                    if (reverseBinaryCodeMappings.ContainsKey(bitString))
+                    if (reverseBinaryCodeMappings!.ContainsKey(bitString))
                     {
                         // A matching pattern in the binary code mappings is found, write the corresponding byte to the output
                         outputStream.WriteByte(reverseBinaryCodeMappings[bitString]);
