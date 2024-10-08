@@ -2,6 +2,10 @@
 {
     using HuffmanCompressor;
     using System.Reflection;
+    using System.IO.Hashing;
+    using System.Security.Cryptography;
+    using System.Collections;
+    using System.Text;
 
     public class EndToEndTests
     {
@@ -37,8 +41,14 @@
             var inflatedFilePath = GetTestPath(inputFilePath + ".inf");
             Program.Main(["inflate", outputFilePath, inflatedFilePath]);
 
+            // Assert
+            var originalHash = GetFileHash(fileName);
+            var inflatedHash = GetFileHash(inflatedFilePath);
+            Assert.Equal(originalHash, inflatedHash);
+
             // Cleanup
             File.Delete(outputFilePath);
+            File.Delete(inflatedFilePath);
         }
 
         private static string GetTestPath(string relativePath)
@@ -47,6 +57,16 @@
             var codeBasePath = Uri.UnescapeDataString(codeBaseUrl.AbsolutePath);
             var dirPath = Path.GetDirectoryName(codeBasePath);
             return Path.Combine(dirPath!, TestDataFolderName, relativePath);
+        }
+
+        private static string GetFileHash(string fileName)
+        {
+            using (FileStream fileStream = File.OpenRead(GetTestPath(fileName)))
+            {
+                var crc32 = new System.IO.Hashing.Crc32();
+                crc32.Append(fileStream);
+                return Encoding.UTF8.GetString(crc32.GetCurrentHash());
+            }
         }
     }
 }
