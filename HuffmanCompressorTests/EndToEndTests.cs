@@ -14,40 +14,45 @@
         [Theory]
         [InlineData("smallfile.txt", true)]
         [InlineData("emptyfile.txt", false)]
-        void CompressTest(string fileName, bool verifyFileSize)
+        [InlineData("wordFile.docx", false)]
+        void CompressTest(string fileName, bool verifySmallerCompressedFileSize)
         {
             // Arrange
             // Note: Use unique output file name to ensure no collision if tests run in parallel.
             var inputFilePath = GetTestPath(fileName);
-            var outputFilePath = GetTestPath(fileName + ".huf");
+            var compressedFilePath = GetTestPath(fileName + ".huf");
 
             // Act
-            Program.Main(["compress", inputFilePath, outputFilePath]);
+            Program.Main(["compress", inputFilePath, compressedFilePath]);
 
             // Assert
-            Assert.True(File.Exists(outputFilePath));
+            Assert.True(File.Exists(compressedFilePath));
 
             // Verify the compression produced a file smaller in size.
             // Note: The compressed file includes the overhead of the character frequency table
             // this means that there is a threshold for which compression will not be effective.
-            if (verifyFileSize)
+            // Also, files that are already compressed, such as zip files or docx files have high entropy and will not compress further
+            FileInfo inputFileInfo, compressedFileInfo, inflatedFileInfo;
+            inputFileInfo = new FileInfo(inputFilePath);
+            compressedFileInfo = new FileInfo(compressedFilePath);
+            if (verifySmallerCompressedFileSize)
             {
-                var inputFileInfo = new FileInfo(inputFilePath);
-                var outputFileInfo = new FileInfo(outputFilePath);
-                Assert.True(inputFileInfo.Length > outputFileInfo.Length);
+                Assert.True(inputFileInfo.Length > compressedFileInfo.Length);
             }
 
             // Act
             var inflatedFilePath = GetTestPath(inputFilePath + ".inf");
-            Program.Main(["inflate", outputFilePath, inflatedFilePath]);
+            Program.Main(["inflate", compressedFilePath, inflatedFilePath]);
+            inflatedFileInfo = new FileInfo(inflatedFilePath);
 
             // Assert
+            Assert.Equal(inputFileInfo.Length, inflatedFileInfo.Length);
             var originalHash = GetFileHash(fileName);
             var inflatedHash = GetFileHash(inflatedFilePath);
             Assert.Equal(originalHash, inflatedHash);
 
             // Cleanup
-            File.Delete(outputFilePath);
+            File.Delete(compressedFilePath);
             File.Delete(inflatedFilePath);
         }
 
@@ -63,7 +68,7 @@
         {
             using (FileStream fileStream = File.OpenRead(GetTestPath(fileName)))
             {
-                var crc32 = new System.IO.Hashing.Crc32();
+                var crc32 = new Crc32();
                 crc32.Append(fileStream);
                 return Encoding.UTF8.GetString(crc32.GetCurrentHash());
             }
