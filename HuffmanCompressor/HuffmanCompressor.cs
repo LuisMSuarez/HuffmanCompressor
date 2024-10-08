@@ -30,34 +30,24 @@ namespace HuffmanCompressor
 
         private void InitializeFrequencyDictionary(string inputFilePath)
         {
-            FileStream inputStream;
-            try
+            using (var inputStream = File.OpenRead(inputFilePath))
             {
-                inputStream = File.OpenRead(inputFilePath);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception opening file: {e.Message}");
-                throw;
-            }
-
-            this.frequencies = new Dictionary<byte, UInt32>(capacity: 256);
-            int inputByte;
-            // -1 represents end of stream, otherwise byte cast as int
-            while ((inputByte = inputStream.ReadByte()) != -1)
-            {
-                byte nativeByte = (byte)inputByte;
-                if (!this.frequencies.ContainsKey(nativeByte))
+                this.frequencies = new Dictionary<byte, UInt32>(capacity: 256);
+                int inputByte;
+                // -1 represents end of stream, otherwise byte cast as int
+                while ((inputByte = inputStream.ReadByte()) != -1)
                 {
-                    this.frequencies.Add(nativeByte, 1);
-                }
-                else
-                {
-                    this.frequencies[nativeByte]++;
+                    byte nativeByte = (byte)inputByte;
+                    if (!this.frequencies.ContainsKey(nativeByte))
+                    {
+                        this.frequencies.Add(nativeByte, 1);
+                    }
+                    else
+                    {
+                        this.frequencies[nativeByte]++;
+                    }
                 }
             }
-
-            inputStream.Close();
         }
 
         private void BuildTree()
@@ -113,40 +103,22 @@ namespace HuffmanCompressor
 
         private void Compress(string inputFilePath, string outputFilePath)
         {
-            FileStream inputStream;
-            try
+            using (var inputStream = File.OpenRead(inputFilePath))
             {
-                inputStream = File.OpenRead(inputFilePath);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception opening input file: {e.Message}");
-                throw;
-            }
+                using (var outputStream = File.OpenWrite(outputFilePath))
+                {
+                    this.WriteFrequencyDictionary(outputStream);
 
-            FileStream outputStream;
-            try
-            {
-                outputStream = File.OpenWrite(outputFilePath);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception opening output file: {e.Message}");
-                throw;
-            }
+                    var bitWriter = new BitWriter(outputStream);
+                    int inputByte;
+                    while ((inputByte = inputStream.ReadByte()) != -1)
+                    {
+                        bitWriter.WriteBits(this.binaryCodeMappings![(byte)inputByte]);
+                    }
 
-            this.WriteFrequencyDictionary(outputStream);
-
-            var bitWriter = new BitWriter(outputStream);
-            int inputByte;
-            while ((inputByte = inputStream.ReadByte()) != -1)
-            {
-                bitWriter.WriteBits(this.binaryCodeMappings![(byte)inputByte]);
+                    bitWriter.Flush();
+                }
             }
-
-            bitWriter.Flush();
-            inputStream.Close();
-            outputStream.Close();
         }
 
         /// <summary>
@@ -217,9 +189,11 @@ namespace HuffmanCompressor
 
             // For decompression, we key off binary codes to obtain the corresponding byte, which is the opposite to what we do in compression.
             // This ensures that lookup for decompression has constant time complexity.
-            var reverseBinaryCodeMappings = this.binaryCodeMappings!.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+            var reverseBinaryCodeMappings = this.binaryCodeMappings?.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
             var bitReader = new BitReader(inputStream);
-            var numBytes = this.frequencies!.Values.Aggregate((a, b) => a + b);
+            var numBytes = this.frequencies!.Values.Count > 0 
+                ? this.frequencies!.Values.Aggregate((a, b) => a + b)
+                : 0;
             for (int i = 0; i < numBytes; i++)
             {
                 var bitString = string.Empty;
@@ -228,7 +202,7 @@ namespace HuffmanCompressor
                 {
                     var bit = bitReader.ReadNextBit();
                     bitString = $"{bitString}{bit}";
-                    if (reverseBinaryCodeMappings.ContainsKey(bitString))
+                    if (reverseBinaryCodeMappings!.ContainsKey(bitString))
                     {
                         // A matching pattern in the binary code mappings is found, write the corresponding byte to the output
                         outputStream.WriteByte(reverseBinaryCodeMappings[bitString]);

@@ -42,7 +42,7 @@ namespace HuffmanCompressorTests
         }
 
         [Fact]
-        public void ArgumentExceptionThrownWithInvalidParameterTest()
+        public void ArgumentExceptionThrownWithInvalidCommandTest()
         {
             // Arrange
             var mockCompressor = new Mock<IFileCompressor>(MockBehavior.Strict);
@@ -51,6 +51,20 @@ namespace HuffmanCompressorTests
             // Act & Assert
             Assert.Throws<ArgumentException>(
                 () => Program.Main(["foo", "input.txt", "output.bin"]));
+        }
+
+        [Theory]
+        [InlineData("compress")]
+        [InlineData("foo")]
+        public void ArgumentExceptionThrownWithInvalidNumberOfParametersTest(string command)
+        {
+            // Arrange
+            var mockCompressor = new Mock<IFileCompressor>(MockBehavior.Strict);
+            Program.SetCompressorReference(mockCompressor.Object);
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(
+                () => Program.Main([command]));
         }
     }
 }
