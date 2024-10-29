@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HuffmanCompressor
+﻿namespace HuffmanCompressorLib
 {
-    internal interface IFileCompressor
+    public interface IFileCompressor
     {
         void Compress(string inputFilePath, string outputFilePath);
         void Inflate(string inputFilePath, string outputFilePath);
