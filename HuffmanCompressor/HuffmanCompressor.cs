@@ -174,43 +174,33 @@
 
         private void InflateInternal(FileStream inputStream, string outputFilePath)
         {
-            FileStream outputStream;
-            try
+            using (var outputStream = File.OpenWrite(outputFilePath))
             {
-                outputStream = File.OpenWrite(outputFilePath);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception opening output file: {e.Message}");
-                throw;
-            }
-
-            // For decompression, we key off binary codes to obtain the corresponding byte, which is the opposite to what we do in compression.
-            // This ensures that lookup for decompression has constant time complexity.
-            var reverseBinaryCodeMappings = this.binaryCodeMappings?.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
-            var bitReader = new BitReader(inputStream);
-            var numBytes = this.frequencies!.Values.Count > 0 
-                ? this.frequencies!.Values.Aggregate((a, b) => a + b)
-                : 0;
-            for (int i = 0; i < numBytes; i++)
-            {
-                var bitString = string.Empty;
-                var binaryCodeMatch = false;
-                while (!binaryCodeMatch)
+                // For decompression, we key off binary codes to obtain the corresponding byte, which is the opposite to what we do in compression.
+                // This ensures that lookup for decompression has constant time complexity.
+                var reverseBinaryCodeMappings = this.binaryCodeMappings?.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+                var bitReader = new BitReader(inputStream);
+                var numBytes = this.frequencies!.Values.Count > 0
+                    ? this.frequencies!.Values.Aggregate((a, b) => a + b)
+                    : 0;
+                for (int i = 0; i < numBytes; i++)
                 {
-                    var bit = bitReader.ReadNextBit();
-                    bitString = $"{bitString}{bit}";
-                    if (reverseBinaryCodeMappings!.ContainsKey(bitString))
+                    var bitString = string.Empty;
+                    var binaryCodeMatch = false;
+                    while (!binaryCodeMatch)
                     {
-                        // A matching pattern in the binary code mappings is found, write the corresponding byte to the output
-                        outputStream.WriteByte(reverseBinaryCodeMappings[bitString]);
-                        binaryCodeMatch = true;
+                        var bit = bitReader.ReadNextBit();
+                        bitString = $"{bitString}{bit}";
+                        if (reverseBinaryCodeMappings!.ContainsKey(bitString))
+                        {
+                            // A matching pattern in the binary code mappings is found, write the corresponding byte to the output
+                            outputStream.WriteByte(reverseBinaryCodeMappings[bitString]);
+                            binaryCodeMatch = true;
+                        }
                     }
                 }
+                inputStream.Close();
             }
-
-            outputStream.Close();
-            inputStream.Close();
         }
     }
 }
