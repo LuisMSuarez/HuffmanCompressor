@@ -6,9 +6,10 @@
 
     public class HuffmanCompressor : IFileCompressor
     {
-        private IDictionary<byte, UInt32>? frequencies;
-        private IDictionary<byte, string>? binaryCodeMappings;
-        private Node<byte>? treeRoot;
+        private IDictionary<short, UInt32>? frequencies;
+        private IDictionary<short, string>? binaryCodeMappings;
+        private Node<short>? treeRoot;
+        private const short EndOfFileCode = -1;
 
         public void Compress(string inputFilePath, string outputFilePath)
         {
@@ -30,7 +31,7 @@
         {
             using (var inputStream = File.OpenRead(inputFilePath))
             {
-                this.frequencies = new Dictionary<byte, UInt32>(capacity: 256);
+                this.frequencies = new Dictionary<short, UInt32>(capacity: 256);
                 int inputByte;
                 // -1 represents end of stream, otherwise byte cast as int
                 while ((inputByte = inputStream.ReadByte()) != -1)
@@ -51,11 +52,16 @@
         private void BuildTree()
         {
             // Use a MinHeap priority queue, creating a node with the byte, and the frequency as priority
-            var priorityQueue = new PriorityQueue<Node<byte>, UInt32>(initialCapacity: 256);
+            var priorityQueue = new PriorityQueue<Node<short>, UInt32>(initialCapacity: 256);
             foreach (var kvp in frequencies!)
             {
-                priorityQueue.Enqueue(new Node<byte>(kvp.Key), kvp.Value);
+                priorityQueue.Enqueue(new Node<short>(kvp.Key), kvp.Value);
             }
+
+            // Enque special "end of file" node with value -1 and priority 0. This special marker will appear at the end of the file so that during
+            // decompression we deterministically know we have exhausted the input file.  This allows us to compress arbitrarily large input files without having to save in
+            // the file header the number of bytes in the input, which could overflow for very large files.
+            priorityQueue.Enqueue(new Node<short>(EndOfFileCode), 0);
 
             // Take the 2 nodes at the head of the queue (lowest frequency) and combine into a new node
             // The tree is complete when there is only 1 node left
@@ -63,30 +69,19 @@
             {
                 priorityQueue.TryDequeue(out var leftNode, out UInt32 leftPriority);
                 priorityQueue.TryDequeue(out var rightNode, out UInt32 rightPriority);
-                priorityQueue.Enqueue(new Node<byte>(leftNode!, rightNode!), leftPriority + rightPriority);
+                priorityQueue.Enqueue(new Node<short>(leftNode!, rightNode!), leftPriority + rightPriority);
             }
 
-            // Protect against case where the input file was empty, and therefore there were never any nodes in the priority queue
-            if (priorityQueue.Count > 0)
-            {
-                this.treeRoot = priorityQueue.Dequeue();
-            }
+            this.treeRoot = priorityQueue.Dequeue();
         }
 
         private void BuildBinaryCodeMappings()
         {
-            // Base case: empty input file means there is no binary tree, so nothing to do.
-            if (this.treeRoot == null)
-            {
-                return;
-            }
-
-            this.binaryCodeMappings = new Dictionary<byte, string>(capacity: this.frequencies!.Count);
-
-            BuildBinaryCodeMappings(this.treeRoot, string.Empty);
+            this.binaryCodeMappings = new Dictionary<short, string>(capacity: this.frequencies!.Count);
+            BuildBinaryCodeMappings(this.treeRoot!, string.Empty);
         }
 
-        private void BuildBinaryCodeMappings(Node<byte> node, string binaryCode)
+        private void BuildBinaryCodeMappings(Node<short> node, string binaryCode)
         {
             if (node.IsLeafNode)
             {
@@ -108,11 +103,16 @@
                     this.WriteFrequencyDictionary(outputStream);
 
                     var bitWriter = new BitWriter(outputStream);
+
+                    // Main loop to encode each byte in the input stream according to its binary code mapping
                     int inputByte;
                     while ((inputByte = inputStream.ReadByte()) != -1)
                     {
                         bitWriter.WriteBits(this.binaryCodeMappings![(byte)inputByte]);
                     }
+
+                    // Write End of file code at the very end.
+                    bitWriter.WriteBits(this.binaryCodeMappings![EndOfFileCode]);
 
                     bitWriter.Flush();
                 }
@@ -122,15 +122,15 @@
         /// <summary>
         /// Writes the frequency dictionary to the output file so that the binary tree can be rebuilt to decompress the file.
         /// As an optimization, we only write frequencies for the bytes that were present in the input file.
-        /// Note, the binary code mappings could be used as an alternate way to decode the file, but it would consume more disk space than the frequencies table
-        /// defeating the purpose of an efficient compression algorithm.
+        /// Note: storing the binary code mappings could be used as an alternate way to decode the file, but it would consume more disk space than the frequencies table
+        /// defeating the purpose of an efficient compression algorithm.  Instead, the binary code mappings will be rebuilt at time of decompression from this frequency table.
         /// </summary>
         /// <param name="outputStream"></param>
         private void WriteFrequencyDictionary(FileStream outputStream)
         {
             var writer = new BinaryWriter(outputStream);
 
-            // frequency count can be 256 at most, so we need 2 bytes at most
+            // frequency table size can be 256 + 1 end of file character (257) at most, so we need 2 bytes at most (ushort) on the header of size of frequency table
             writer.Write((ushort)this.frequencies!.Count);
             foreach (var kvp in this.frequencies)
             {
@@ -154,14 +154,15 @@
             }
 
             var reader = new BinaryReader(inputStream);
-            var frequencyCount = reader.ReadUInt16();
-            if (frequencyCount < 0 || frequencyCount > 256)
+            var frequencyTableSize = reader.ReadUInt16();
+            // 257 = all possible 8 bit characters + special end of file character
+            if (frequencyTableSize < 0 || frequencyTableSize > 257)
             {
-                throw new ArgumentOutOfRangeException($"Invalid frequency count {frequencyCount} in input file");
+                throw new ArgumentOutOfRangeException($"Invalid frequency count {frequencyTableSize} in input file");
             }
 
-            this.frequencies = new Dictionary<byte, UInt32>(capacity: frequencyCount);
-            for (int i = 0; i < frequencyCount; i++)
+            this.frequencies = new Dictionary<short, UInt32>(capacity: frequencyTableSize);
+            for (int i = 0; i < frequencyTableSize; i++)
             {
                 var key = reader.ReadByte();
                 var value = reader.ReadUInt32();
@@ -180,10 +181,8 @@
                 // This ensures that lookup for decompression has constant time complexity.
                 var reverseBinaryCodeMappings = this.binaryCodeMappings?.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
                 var bitReader = new BitReader(inputStream);
-                var numBytes = this.frequencies!.Values.Count > 0
-                    ? this.frequencies!.Values.Aggregate((a, b) => a + b)
-                    : 0;
-                for (int i = 0; i < numBytes; i++)
+                var endOfFileFound = false;
+                while (!endOfFileFound)
                 {
                     var bitString = string.Empty;
                     var binaryCodeMatch = false;
@@ -193,9 +192,17 @@
                         bitString = $"{bitString}{bit}";
                         if (reverseBinaryCodeMappings!.ContainsKey(bitString))
                         {
-                            // A matching pattern in the binary code mappings is found, write the corresponding byte to the output
-                            outputStream.WriteByte(reverseBinaryCodeMappings[bitString]);
                             binaryCodeMatch = true;
+                            if (reverseBinaryCodeMappings![bitString] == EndOfFileCode)
+                            {
+                                endOfFileFound = true;
+                            }
+                            else
+                            {
+                                // A matching pattern in the binary code mappings is found, write the corresponding byte to the output
+                                outputStream.WriteByte((byte)reverseBinaryCodeMappings[bitString]);
+                                binaryCodeMatch = true;
+                            }
                         }
                     }
                 }
