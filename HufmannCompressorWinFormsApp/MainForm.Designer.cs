@@ -96,4 +96,5 @@
         private ToolStripStatusLabel toolStripStatusLabel;
         private ToolStripProgressBar toolStripProgressBar1;
     }
-|}
+}
+
