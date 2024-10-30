@@ -6,7 +6,7 @@
 
     public class HuffmanCompressor : IFileCompressor
     {
-        private IDictionary<short, UInt32>? frequencies;
+        private IDictionary<byte, UInt32>? frequencies;
         private IDictionary<short, string>? binaryCodeMappings;
         private Node<short>? treeRoot;
         private const short EndOfFileCode = -1;
@@ -31,7 +31,7 @@
         {
             using (var inputStream = File.OpenRead(inputFilePath))
             {
-                this.frequencies = new Dictionary<short, UInt32>(capacity: 256);
+                this.frequencies = new Dictionary<byte, UInt32>();
                 int inputByte;
                 // -1 represents end of stream, otherwise byte cast as int
                 while ((inputByte = inputStream.ReadByte()) != -1)
@@ -52,7 +52,7 @@
         private void BuildTree()
         {
             // Use a MinHeap priority queue, creating a node with the byte, and the frequency as priority
-            var priorityQueue = new PriorityQueue<Node<short>, UInt32>(initialCapacity: 256);
+            var priorityQueue = new PriorityQueue<Node<short>, UInt32>();
             foreach (var kvp in frequencies!)
             {
                 priorityQueue.Enqueue(new Node<short>(kvp.Key), kvp.Value);
@@ -77,7 +77,7 @@
 
         private void BuildBinaryCodeMappings()
         {
-            this.binaryCodeMappings = new Dictionary<short, string>(capacity: this.frequencies!.Count);
+            this.binaryCodeMappings = new Dictionary<short, string>();
             BuildBinaryCodeMappings(this.treeRoot!, string.Empty);
         }
 
@@ -155,13 +155,13 @@
 
             var reader = new BinaryReader(inputStream);
             var frequencyTableSize = reader.ReadUInt16();
-            // 257 = all possible 8 bit characters + special end of file character
-            if (frequencyTableSize < 0 || frequencyTableSize > 257)
+            // 256 = all possible 8 bit characters
+            if (frequencyTableSize < 0 || frequencyTableSize > 256)
             {
                 throw new ArgumentOutOfRangeException($"Invalid frequency count {frequencyTableSize} in input file");
             }
 
-            this.frequencies = new Dictionary<short, UInt32>(capacity: frequencyTableSize);
+            this.frequencies = new Dictionary<byte, UInt32>();
             for (int i = 0; i < frequencyTableSize; i++)
             {
                 var key = reader.ReadByte();
