@@ -14,6 +14,7 @@
         [Theory]
         [InlineData("smallfile.txt", true)]
         [InlineData("emptyfile.txt", false)]
+        [InlineData("singleCharacter.txt", false)]
         [InlineData("wordFile.docx", false)]
         void CompressTest(string fileName, bool verifySmallerCompressedFileSize)
         {

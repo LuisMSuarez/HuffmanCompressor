@@ -177,6 +177,12 @@
         {
             using (var outputStream = File.OpenWrite(outputFilePath))
             {
+                // Special case if input file was empty, nothing to do
+                if (this.frequencies!.Count == 0)
+                {
+                    return;
+                }
+
                 // For decompression, we key off binary codes to obtain the corresponding byte, which is the opposite to what we do in compression.
                 // This ensures that lookup for decompression has constant time complexity.
                 var reverseBinaryCodeMappings = this.binaryCodeMappings?.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
