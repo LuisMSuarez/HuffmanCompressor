@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HuffmanCompressor
+﻿namespace HuffmanCompressorLib
 {
-    internal class HuffmanCompressor : IFileCompressor
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    public class HuffmanCompressor : IFileCompressor
     {
         private IDictionary<byte, UInt32>? frequencies;
         private IDictionary<byte, string>? binaryCodeMappings;

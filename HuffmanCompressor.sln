@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuffmanCompressor", "HuffmanCompressor\HuffmanCompressor.csproj", "{93160A18-48C3-4AB8-A9C9-2EA2D2C46B01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuffmanCompressorLib", "HuffmanCompressor\HuffmanCompressorLib.csproj", "{93160A18-48C3-4AB8-A9C9-2EA2D2C46B01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HuffmanCompressorTests", "HuffmanCompressorTests\HuffmanCompressorTests.csproj", "{304D0AF6-D701-40E9-8A2F-E2508A12ED5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuffmanCompressorTests", "HuffmanCompressorTests\HuffmanCompressorTests.csproj", "{304D0AF6-D701-40E9-8A2F-E2508A12ED5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HufmannCompressorWinFormsApp", "HufmannCompressorWinFormsApp\HufmannCompressorWinFormsApp.csproj", "{78D7EB54-F5CB-45E8-B293-2B95EA522589}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HuffmanCompressorCmd", "HuffmanCompressorCmd\HuffmanCompressorCmd.csproj", "{567B674B-79D9-4331-A6D6-A13735DA3327}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{304D0AF6-D701-40E9-8A2F-E2508A12ED5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{304D0AF6-D701-40E9-8A2F-E2508A12ED5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{304D0AF6-D701-40E9-8A2F-E2508A12ED5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78D7EB54-F5CB-45E8-B293-2B95EA522589}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78D7EB54-F5CB-45E8-B293-2B95EA522589}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78D7EB54-F5CB-45E8-B293-2B95EA522589}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78D7EB54-F5CB-45E8-B293-2B95EA522589}.Release|Any CPU.Build.0 = Release|Any CPU
+		{567B674B-79D9-4331-A6D6-A13735DA3327}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{567B674B-79D9-4331-A6D6-A13735DA3327}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{567B674B-79D9-4331-A6D6-A13735DA3327}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{567B674B-79D9-4331-A6D6-A13735DA3327}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

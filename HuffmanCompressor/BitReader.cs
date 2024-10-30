@@ -1,4 +1,4 @@
-﻿namespace HuffmanCompressor
+﻿namespace HuffmanCompressorLib
 {
     /// <summary>
     /// Provides functionality to read individual bits from an input file stream.

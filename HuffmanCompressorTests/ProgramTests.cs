@@ -1,6 +1,7 @@
 namespace HuffmanCompressorTests
 {
-    using HuffmanCompressor;
+    using HuffmanCompressorCmd;
+    using HuffmanCompressorLib;
     using Moq;
 
     public class ProgramTests

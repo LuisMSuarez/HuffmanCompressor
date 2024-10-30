@@ -1,4 +1,4 @@
-﻿namespace HuffmanCompressor
+﻿namespace HuffmanCompressorLib
 {
     /// <summary>
     /// Provides functionality to write individual bits to an output file stream.

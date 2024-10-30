@@ -1,6 +1,6 @@
 ﻿namespace HuffmanCompressorTests
 {
-    using HuffmanCompressor;
+    using HuffmanCompressorCmd;
     using System.Reflection;
     using System.IO.Hashing;
     using System.Security.Cryptography;

@@ -1,5 +1,7 @@
-﻿namespace HuffmanCompressor
+﻿namespace HuffmanCompressorCmd
 {
+    using HuffmanCompressorLib;
+
     public static class Program
     {
         private static IFileCompressor _compressor;
@@ -17,7 +19,7 @@
         {
             _compressor = compressor;
         }
-    
+
         public static void Main(string[] args)
         {
             const string usageString = "Usage: [compress|inflate] [input file path] [output file path]";
