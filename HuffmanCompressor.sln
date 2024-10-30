@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuffmanCompressorLib", "Huf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuffmanCompressorTests", "HuffmanCompressorTests\HuffmanCompressorTests.csproj", "{304D0AF6-D701-40E9-8A2F-E2508A12ED5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HufmannCompressorWinFormsApp", "HufmannCompressorWinFormsApp\HufmannCompressorWinFormsApp.csproj", "{78D7EB54-F5CB-45E8-B293-2B95EA522589}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HuffmanCompressorWinFormsApp", "HufmannCompressorWinFormsApp\HuffmanCompressorWinFormsApp.csproj", "{78D7EB54-F5CB-45E8-B293-2B95EA522589}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HuffmanCompressorCmd", "HuffmanCompressorCmd\HuffmanCompressorCmd.csproj", "{567B674B-79D9-4331-A6D6-A13735DA3327}"
 EndProject
