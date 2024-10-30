@@ -10,20 +10,20 @@
         private IDictionary<byte, string>? binaryCodeMappings;
         private Node<byte>? treeRoot;
 
-        void IFileCompressor.Compress(string inputFilePath, string outputFilePath)
+        public void Compress(string inputFilePath, string outputFilePath)
         {
             this.InitializeFrequencyDictionary(inputFilePath);
             this.BuildTree();
             this.BuildBinaryCodeMappings();
-            this.Compress(inputFilePath, outputFilePath);
+            this.CompressInternal(inputFilePath, outputFilePath);
         }
 
-        void IFileCompressor.Inflate(string inputFilePath, string outputFilePath)
+        public void Inflate(string inputFilePath, string outputFilePath)
         {
             var inputStream = this.ReadFrequencyDictionary(inputFilePath);
             this.BuildTree();
             this.BuildBinaryCodeMappings();
-            this.Inflate(inputStream, outputFilePath);
+            this.InflateInternal(inputStream, outputFilePath);
         }
 
         private void InitializeFrequencyDictionary(string inputFilePath)
@@ -99,7 +99,7 @@
             this.BuildBinaryCodeMappings(node.GetRight()!, $"{binaryCode}1");
         }
 
-        private void Compress(string inputFilePath, string outputFilePath)
+        private void CompressInternal(string inputFilePath, string outputFilePath)
         {
             using (var inputStream = File.OpenRead(inputFilePath))
             {
@@ -172,7 +172,7 @@
             return inputStream;
         }
 
-        private void Inflate(FileStream inputStream, string outputFilePath)
+        private void InflateInternal(FileStream inputStream, string outputFilePath)
         {
             FileStream outputStream;
             try

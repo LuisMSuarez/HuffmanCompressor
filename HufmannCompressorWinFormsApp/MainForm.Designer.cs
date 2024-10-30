@@ -28,32 +28,73 @@
         /// </summary>
         private void InitializeComponent()
         {
-            button1 = new Button();
+            btnSelectFile = new Button();
+            openFileDialog = new OpenFileDialog();
+            statusStrip = new StatusStrip();
+            toolStripStatusLabel = new ToolStripStatusLabel();
+            toolStripProgressBar1 = new ToolStripProgressBar();
+            statusStrip.SuspendLayout();
             SuspendLayout();
             // 
-            // button1
+            // btnSelectFile
             // 
-            button1.Location = new Point(50, 56);
-            button1.Name = "button1";
-            button1.Size = new Size(150, 46);
-            button1.TabIndex = 0;
-            button1.Text = "Select file";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += this.button1_Click;
+            btnSelectFile.Location = new Point(38, 44);
+            btnSelectFile.Margin = new Padding(2);
+            btnSelectFile.Name = "btnSelectFile";
+            btnSelectFile.Size = new Size(115, 36);
+            btnSelectFile.TabIndex = 0;
+            btnSelectFile.Text = "Select file";
+            btnSelectFile.UseVisualStyleBackColor = true;
+            btnSelectFile.Click += btnSelectFile_Click;
+            // 
+            // openFileDialog
+            // 
+            openFileDialog.FileName = "openFileDialog";
+            // 
+            // statusStrip
+            // 
+            statusStrip.ImageScalingSize = new Size(24, 24);
+            statusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel, toolStripProgressBar1 });
+            statusStrip.Location = new Point(0, 320);
+            statusStrip.Name = "statusStrip";
+            statusStrip.Size = new Size(615, 32);
+            statusStrip.TabIndex = 1;
+            statusStrip.Text = "statusStrip";
+            // 
+            // toolStripStatusLabel
+            // 
+            toolStripStatusLabel.Name = "toolStripStatusLabel";
+            toolStripStatusLabel.Size = new Size(60, 25);
+            toolStripStatusLabel.Text = "Ready";
+            // 
+            // toolStripProgressBar1
+            // 
+            toolStripProgressBar1.Name = "toolStripProgressBar1";
+            toolStripProgressBar1.Size = new Size(200, 24);
             // 
             // MainForm
             // 
-            AutoScaleDimensions = new SizeF(13F, 32F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(button1);
+            ClientSize = new Size(615, 352);
+            Controls.Add(statusStrip);
+            Controls.Add(btnSelectFile);
+            Margin = new Padding(2);
             Name = "MainForm";
-            Text = "Form1";
+            Text = "Huffman Compressor";
+            statusStrip.ResumeLayout(false);
+            statusStrip.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
-        private Button button1;
+        private Button btnSelectFile;
+        private OpenFileDialog openFileDialog;
+        private StatusStrip statusStrip;
+        private ToolStripStatusLabel toolStripStatusLabel;
+        private ToolStripProgressBar toolStripProgressBar1;
     }
 }
+
