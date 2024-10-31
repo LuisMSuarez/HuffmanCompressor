@@ -3,8 +3,6 @@
     using HuffmanCompressorCmd;
     using System.Reflection;
     using System.IO.Hashing;
-    using System.Security.Cryptography;
-    using System.Collections;
     using System.Text;
 
     public class EndToEndTests

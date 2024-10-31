@@ -20,10 +20,14 @@ namespace HuffmanCompressorLib
             multiplier = 1;
 
             // Initialize the dictionaries to make the code more straightforward in the rest of the class.
-            for (var i = byte.MinValue; i < byte.MaxValue; i++)
+            for (var i = byte.MinValue; i <= byte.MaxValue; i++)
             {
                 this.moduloCounter.Add(i, 0);
                 this.frequencies.Add(i, 0);
+                if (i == byte.MaxValue)
+                {
+                    break;
+                }
             }
         }
 
@@ -69,12 +73,16 @@ namespace HuffmanCompressorLib
         // Returns non-zero frequencies
         public IEnumerable<KeyValuePair<byte, UInt32>> GetEnumerator()
         {
-            for (byte b = byte.MinValue; b < byte.MaxValue; b++)
+            for (byte b = byte.MinValue; b <= byte.MaxValue; b++)
             {
                 var frequency = this.GetFrequency(b);
                 if (frequency > 0)
                 {
                     yield return new KeyValuePair<byte, UInt32>(b, frequency);
+                }
+                if (b == byte.MaxValue)
+                {
+                    break;
                 }
             }
         }

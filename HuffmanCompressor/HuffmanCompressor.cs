@@ -6,8 +6,8 @@
 
     public class HuffmanCompressor : IFileCompressor
     {
-        private readonly FrequencyCounter frequencyCounter;
-        private readonly IDictionary<short, string> binaryCodeMappings;
+        private FrequencyCounter frequencyCounter;
+        private IDictionary<short, string> binaryCodeMappings;
         private Node<short>? treeRoot;
         private const short EndOfFileCode = -1;
 
@@ -35,6 +35,7 @@
 
         private void InitializeFrequencyDictionary(string inputFilePath)
         {
+            this.frequencyCounter = new FrequencyCounter();
             using (var inputStream = File.OpenRead(inputFilePath))
             {
                 int inputByte;
@@ -75,6 +76,7 @@
 
         private void BuildBinaryCodeMappings()
         {
+            this.binaryCodeMappings = new Dictionary<short, string>();
             BuildBinaryCodeMappings(this.treeRoot!, string.Empty);
         }
 
@@ -139,6 +141,7 @@
 
         private FileStream ReadFrequencyDictionary(string inputFilePath)
         {
+            this.frequencyCounter = new FrequencyCounter();
             FileStream inputStream;
             try
             {
