@@ -28,28 +28,25 @@
         /// </summary>
         private void InitializeComponent()
         {
-            btnSelectFile = new Button();
+            btnCompressFile = new Button();
             openFileDialog = new OpenFileDialog();
             statusStrip = new StatusStrip();
             toolStripStatusLabel = new ToolStripStatusLabel();
             toolStripProgressBar1 = new ToolStripProgressBar();
+            btnInflateFile = new Button();
             statusStrip.SuspendLayout();
             SuspendLayout();
             // 
-            // btnSelectFile
+            // btnCompressFile
             // 
-            btnSelectFile.Location = new Point(38, 44);
-            btnSelectFile.Margin = new Padding(2);
-            btnSelectFile.Name = "btnSelectFile";
-            btnSelectFile.Size = new Size(115, 36);
-            btnSelectFile.TabIndex = 0;
-            btnSelectFile.Text = "Select file";
-            btnSelectFile.UseVisualStyleBackColor = true;
-            btnSelectFile.Click += btnSelectFile_Click;
-            // 
-            // openFileDialog
-            // 
-            openFileDialog.FileName = "openFileDialog";
+            btnCompressFile.Location = new Point(38, 44);
+            btnCompressFile.Margin = new Padding(2);
+            btnCompressFile.Name = "btnCompressFile";
+            btnCompressFile.Size = new Size(152, 36);
+            btnCompressFile.TabIndex = 0;
+            btnCompressFile.Text = "Compress file";
+            btnCompressFile.UseVisualStyleBackColor = true;
+            btnCompressFile.Click += btnCompressFile_Click;
             // 
             // statusStrip
             // 
@@ -72,13 +69,25 @@
             toolStripProgressBar1.Name = "toolStripProgressBar1";
             toolStripProgressBar1.Size = new Size(200, 24);
             // 
+            // btnInflateFile
+            // 
+            btnInflateFile.Location = new Point(222, 44);
+            btnInflateFile.Margin = new Padding(2);
+            btnInflateFile.Name = "btnInflateFile";
+            btnInflateFile.Size = new Size(152, 36);
+            btnInflateFile.TabIndex = 2;
+            btnInflateFile.Text = "Inflate file";
+            btnInflateFile.UseVisualStyleBackColor = true;
+            btnInflateFile.Click += btnInflateFile_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(615, 352);
+            Controls.Add(btnInflateFile);
             Controls.Add(statusStrip);
-            Controls.Add(btnSelectFile);
+            Controls.Add(btnCompressFile);
             Margin = new Padding(2);
             Name = "MainForm";
             Text = "Huffman Compressor";
@@ -90,11 +99,12 @@
 
         #endregion
 
-        private Button btnSelectFile;
+        private Button btnCompressFile;
         private OpenFileDialog openFileDialog;
         private StatusStrip statusStrip;
         private ToolStripStatusLabel toolStripStatusLabel;
         private ToolStripProgressBar toolStripProgressBar1;
+        private Button btnInflateFile;
     }
 }
 
