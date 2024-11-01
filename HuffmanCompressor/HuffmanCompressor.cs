@@ -9,6 +9,10 @@
         private FrequencyCounter frequencyCounter;
         private IDictionary<short, string> binaryCodeMappings;
         private Node<short>? treeRoot;
+
+        /// <summary>
+        /// Code to mark End of File character.  Must not be a confused with a regular byte 0 to 255.
+        /// </summary>
         private const short EndOfFileCode = -1;
 
         public HuffmanCompressor()

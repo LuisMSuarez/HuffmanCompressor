@@ -49,14 +49,17 @@ namespace HuffmanCompressorLib
             this.moduloCounter[value]++;
             if (this.moduloCounter[value] == multiplier)
             {
-                this.frequencies[value]++;
-                this.moduloCounter[value] = 0;
-            }
+                // If the counter is about to overflow, we call the Rebase function
+                if (this.frequencies[value] == UInt32.MaxValue)
+                {
+                    this.Rebase();
+                }
+                else
+                {
+                    this.frequencies[value]++;
+                }
 
-            // If the counter is about to overflow, we call the Rebase function
-            if (this.frequencies[value] == UInt32.MaxValue)
-            {
-                this.Rebase();
+                this.moduloCounter[value] = 0;
             }
         }
 
