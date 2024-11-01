@@ -24,6 +24,10 @@ namespace HuffmanCompressorLib
             {
                 this.moduloCounter.Add(i, 0);
                 this.frequencies.Add(i, 0);
+
+                // Avoid overflow of counter that would lead to an infinite loop
+                // https://stackoverflow.com/questions/43800147/iterating-from-minvalue-to-maxvalue-with-overflow
+                // Note: another alternative would be to use an int index and cast to byte
                 if (i == byte.MaxValue)
                 {
                     break;
@@ -33,6 +37,15 @@ namespace HuffmanCompressorLib
 
         public void Increment(byte value)
         {
+            // Check to see if we have reached the rare theoretic limit for frequency counting.
+            // In that case, the best we can do is stop counting to avoid an overlfow back to 0.
+            // Note: this would still mean having read 16 million TB of a single character!
+            if (this.moduloCounter[value] == UInt32.MaxValue &&
+                this.frequencies[value] == UInt32.MaxValue)
+            {
+                return;
+            }
+
             this.moduloCounter[value]++;
             if (this.moduloCounter[value] == multiplier)
             {
@@ -50,6 +63,7 @@ namespace HuffmanCompressorLib
         public void SetFrequency(byte value, UInt32 frequency)
         {
             this.frequencies[(byte)value] = frequency;
+            this.moduloCounter[(byte)value] = 0;
         }
 
         public UInt32 GetFrequency(byte value)
@@ -70,7 +84,10 @@ namespace HuffmanCompressorLib
             return this.frequencies[value];
         }
 
-        // Returns non-zero frequencies
+        /// <summary>
+        /// Enumerator to allow caller to cycle through frequencies.
+        /// </summary>
+        /// <returns>Key value pair enumaration of non-zero frequencies</returns>
         public IEnumerable<KeyValuePair<byte, UInt32>> GetEnumerator()
         {
             for (byte b = byte.MinValue; b <= byte.MaxValue; b++)
@@ -80,6 +97,10 @@ namespace HuffmanCompressorLib
                 {
                     yield return new KeyValuePair<byte, UInt32>(b, frequency);
                 }
+
+                // Avoid overflow of counter that would lead to an infinite loop
+                // https://stackoverflow.com/questions/43800147/iterating-from-minvalue-to-maxvalue-with-overflow
+                // Note: another alternative would be to use an int index and cast to byte
                 if (b == byte.MaxValue)
                 {
                     break;
@@ -87,6 +108,11 @@ namespace HuffmanCompressorLib
             }
         }
 
+        /// <summary>
+        /// Rebases all of the frequencies uniformly by dividing them by 2
+        /// This allows us to handle very high counts without risk of overflowing and still
+        /// preserving statistical accuracy.
+        /// </summary>
         private void Rebase()
         {
             this.frequencies.ToList().ForEach( kvp => this.frequencies[kvp.Key] /= 2  + 1);
