@@ -6,10 +6,16 @@
 
     public class HuffmanCompressor : IFileCompressor
     {
-        private IDictionary<byte, UInt32>? frequencies;
-        private IDictionary<short, string>? binaryCodeMappings;
+        private FrequencyCounter frequencyCounter;
+        private IDictionary<short, string> binaryCodeMappings;
         private Node<short>? treeRoot;
         private const short EndOfFileCode = -1;
+
+        public HuffmanCompressor()
+        {
+            this.frequencyCounter = new FrequencyCounter();
+            this.binaryCodeMappings = new Dictionary<short, string>();
+        }
 
         public void Compress(string inputFilePath, string outputFilePath)
         {
@@ -29,22 +35,15 @@
 
         private void InitializeFrequencyDictionary(string inputFilePath)
         {
+            this.frequencyCounter = new FrequencyCounter();
             using (var inputStream = File.OpenRead(inputFilePath))
             {
-                this.frequencies = new Dictionary<byte, UInt32>();
                 int inputByte;
                 // -1 represents end of stream, otherwise byte cast as int
                 while ((inputByte = inputStream.ReadByte()) != -1)
                 {
                     byte nativeByte = (byte)inputByte;
-                    if (!this.frequencies.ContainsKey(nativeByte))
-                    {
-                        this.frequencies.Add(nativeByte, 1);
-                    }
-                    else
-                    {
-                        this.frequencies[nativeByte]++;
-                    }
+                    this.frequencyCounter.Increment(nativeByte);
                 }
             }
         }
@@ -53,7 +52,7 @@
         {
             // Use a MinHeap priority queue, creating a node with the byte, and the frequency as priority
             var priorityQueue = new PriorityQueue<Node<short>, UInt32>();
-            foreach (var kvp in frequencies!)
+            foreach (var kvp in frequencyCounter.GetEnumerator())
             {
                 priorityQueue.Enqueue(new Node<short>(kvp.Key), kvp.Value);
             }
@@ -131,8 +130,8 @@
             var writer = new BinaryWriter(outputStream);
 
             // frequency table size can be 256 + 1 end of file character (257) at most, so we need 2 bytes at most (ushort) on the header of size of frequency table
-            writer.Write((ushort)this.frequencies!.Count);
-            foreach (var kvp in this.frequencies)
+            writer.Write((ushort)this.frequencyCounter.GetEnumerator().Count());
+            foreach (var kvp in this.frequencyCounter.GetEnumerator())
             {
                 writer.Write(kvp.Key);
                 writer.Write(kvp.Value);
@@ -142,6 +141,7 @@
 
         private FileStream ReadFrequencyDictionary(string inputFilePath)
         {
+            this.frequencyCounter = new FrequencyCounter();
             FileStream inputStream;
             try
             {
@@ -161,12 +161,11 @@
                 throw new ArgumentOutOfRangeException($"Invalid frequency count {frequencyTableSize} in input file");
             }
 
-            this.frequencies = new Dictionary<byte, UInt32>();
             for (int i = 0; i < frequencyTableSize; i++)
             {
                 var key = reader.ReadByte();
                 var value = reader.ReadUInt32();
-                this.frequencies.Add(key, value);
+                this.frequencyCounter.SetFrequency(key, value);
             }
 
             // Hand off the input stream to the next steps of decompression so they continue reading after the frequency dictionary header
@@ -178,7 +177,7 @@
             using (var outputStream = File.OpenWrite(outputFilePath))
             {
                 // Special case if input file was empty, nothing to do
-                if (this.frequencies!.Count == 0)
+                if (this.frequencyCounter.GetEnumerator().Count() == 0)
                 {
                     return;
                 }

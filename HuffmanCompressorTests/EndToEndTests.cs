@@ -3,8 +3,6 @@
     using HuffmanCompressorCmd;
     using System.Reflection;
     using System.IO.Hashing;
-    using System.Security.Cryptography;
-    using System.Collections;
     using System.Text;
 
     public class EndToEndTests
@@ -22,6 +20,20 @@
             // Note: Use unique output file name to ensure no collision if tests run in parallel.
             var inputFilePath = GetTestPath(fileName);
             var compressedFilePath = GetTestPath(fileName + ".huf");
+            var inflatedFilePath = GetTestPath(inputFilePath + ".inf");
+
+            // Best-effor attempt to clean up temporary files from previous run
+            // We do it here instead of at the end of the test to avoid pesky race
+            // conditions that happen if we try to delete a file that was just created
+            try
+            {
+                File.Delete(compressedFilePath);
+                File.Delete(inflatedFilePath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
 
             // Act
             Program.Main(["compress", inputFilePath, compressedFilePath]);
@@ -42,7 +54,6 @@
             }
 
             // Act
-            var inflatedFilePath = GetTestPath(inputFilePath + ".inf");
             Program.Main(["inflate", compressedFilePath, inflatedFilePath]);
             inflatedFileInfo = new FileInfo(inflatedFilePath);
 
@@ -51,10 +62,6 @@
             var originalHash = GetFileHash(fileName);
             var inflatedHash = GetFileHash(inflatedFilePath);
             Assert.Equal(originalHash, inflatedHash);
-
-            // Cleanup
-            File.Delete(compressedFilePath);
-            File.Delete(inflatedFilePath);
         }
 
         private static string GetTestPath(string relativePath)
