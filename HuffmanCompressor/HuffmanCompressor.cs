@@ -21,16 +21,38 @@
             this.binaryCodeMappings = new Dictionary<short, string>();
         }
 
+        /// <summary>
+        /// Compresses a file.
+        /// </summary>
+        /// <param name="inputFilePath">File to be compressed.</param>
+        /// <param name="outputFilePath">Path of destination (compressed) file.</param>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="inputFilePath" /> is <see langword="null" />.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath" /> is <see langword="null" />.</exception>
+
         public void Compress(string inputFilePath, string outputFilePath)
         {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(inputFilePath);
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(outputFilePath);
+
             this.InitializeFrequencyDictionary(inputFilePath);
             this.BuildTree();
             this.BuildBinaryCodeMappings();
             this.CompressInternal(inputFilePath, outputFilePath);
         }
 
+        /// <summary>
+        /// Inflates a file.
+        /// </summary>
+        /// <param name="inputFilePath">File to be inflated.</param>
+        /// <param name="outputFilePath">Path of destination (inflated) file.</param>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="inputFilePath" /> is <see langword="null" />.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath" /> is <see langword="null" />.</exception>
+
         public void Inflate(string inputFilePath, string outputFilePath)
         {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(inputFilePath);
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(outputFilePath);
+
             var inputStream = this.ReadFrequencyDictionary(inputFilePath);
             this.BuildTree();
             this.BuildBinaryCodeMappings();
