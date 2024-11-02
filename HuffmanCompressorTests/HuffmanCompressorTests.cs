@@ -16,6 +16,26 @@
             Assert.NotNull(compressor);
         }
 
+        [Fact]
+        public void CompressThrowsExceptionForWhitespaceInputFileName()
+        {
+            // Arrange
+            var compressor = new HuffmanCompressor();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => compressor.Compress(string.Empty, "outputFile.bin"));
+        }
+
+        [Fact]
+        public void CompressThrowsExceptionForWhitespaceOutputFileName()
+        {
+            // Arrange
+            var compressor = new HuffmanCompressor();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => compressor.Compress("inputFile.txt", string.Empty));
+        }
+
         [Theory]
         [InlineData("smallfile.txt")]
         [InlineData("emptyfile.txt")]
@@ -34,6 +54,26 @@
 
             // Assert
             Assert.True(File.Exists(compressedFilePath));
+        }
+
+        [Fact]
+        public void InflateThrowsExceptionForWhitespaceInputFileName()
+        {
+            // Arrange
+            var compressor = new HuffmanCompressor();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => compressor.Inflate(string.Empty, "outputFile.bin"));
+        }
+
+        [Fact]
+        public void InflateThrowsExceptionForWhitespaceOutputFileName()
+        {
+            // Arrange
+            var compressor = new HuffmanCompressor();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => compressor.Inflate("inputFile.huf", string.Empty));
         }
 
         [Theory]

@@ -9,7 +9,7 @@
         [InlineData("emptyfile.txt", false)]
         [InlineData("singleCharacter.txt", false)]
         [InlineData("wordFile.docx", false)]
-        void CompressTest(string fileName, bool verifySmallerCompressedFileSize)
+        public void CompressTest(string fileName, bool verifySmallerCompressedFileSize)
         {
             // Arrange
             // Note: Use unique output file name to ensure no collision if tests run in parallel.

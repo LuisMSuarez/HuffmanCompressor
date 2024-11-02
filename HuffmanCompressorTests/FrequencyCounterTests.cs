@@ -5,7 +5,7 @@
     public class FrequencyCounterTests
     {
         [Fact]
-        void AddItemTest()
+        public void AddItemTest()
         {
             // Arrange
             var counter = new FrequencyCounter();
@@ -19,7 +19,7 @@
         }
 
         [Fact]
-        void SetFrequencyTest()
+        public void SetFrequencyTest()
         {
             // Arrange
             var counter = new FrequencyCounter();
@@ -33,7 +33,7 @@
         }
 
         [Fact]
-        void GetEnumeratorTest()
+        public void GetEnumeratorTest()
         {
             // Arrange
             var counter = new FrequencyCounter();
@@ -51,7 +51,7 @@
         }
 
         [Fact]
-        void IncrementOverflowTest()
+        public void IncrementOverflowTest()
         {
             // Arrange
             var counter = new FrequencyCounter();
