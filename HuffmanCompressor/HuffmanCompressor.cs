@@ -9,6 +9,10 @@
         private FrequencyCounter frequencyCounter;
         private IDictionary<short, string> binaryCodeMappings;
         private Node<short>? treeRoot;
+
+        /// <summary>
+        /// Code to mark End of File character.  Must not be a confused with a regular byte 0 to 255.
+        /// </summary>
         private const short EndOfFileCode = -1;
 
         public HuffmanCompressor()
@@ -17,16 +21,38 @@
             this.binaryCodeMappings = new Dictionary<short, string>();
         }
 
+        /// <summary>
+        /// Compresses a file.
+        /// </summary>
+        /// <param name="inputFilePath">File to be compressed.</param>
+        /// <param name="outputFilePath">Path of destination (compressed) file.</param>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="inputFilePath" /> is <see langword="null" />.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath" /> is <see langword="null" />.</exception>
+
         public void Compress(string inputFilePath, string outputFilePath)
         {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(inputFilePath);
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(outputFilePath);
+
             this.InitializeFrequencyDictionary(inputFilePath);
             this.BuildTree();
             this.BuildBinaryCodeMappings();
             this.CompressInternal(inputFilePath, outputFilePath);
         }
 
+        /// <summary>
+        /// Inflates a file.
+        /// </summary>
+        /// <param name="inputFilePath">File to be inflated.</param>
+        /// <param name="outputFilePath">Path of destination (inflated) file.</param>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="inputFilePath" /> is <see langword="null" />.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath" /> is <see langword="null" />.</exception>
+
         public void Inflate(string inputFilePath, string outputFilePath)
         {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(inputFilePath);
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(outputFilePath);
+
             var inputStream = this.ReadFrequencyDictionary(inputFilePath);
             this.BuildTree();
             this.BuildBinaryCodeMappings();

@@ -1,26 +1,21 @@
 ﻿namespace HuffmanCompressorTests
 {
     using HuffmanCompressorCmd;
-    using System.Reflection;
-    using System.IO.Hashing;
-    using System.Text;
 
     public class EndToEndTests
     {
-        private const string TestDataFolderName = "TestData";
-
         [Theory]
         [InlineData("smallfile.txt", true)]
         [InlineData("emptyfile.txt", false)]
         [InlineData("singleCharacter.txt", false)]
         [InlineData("wordFile.docx", false)]
-        void CompressTest(string fileName, bool verifySmallerCompressedFileSize)
+        public void CompressTest(string fileName, bool verifySmallerCompressedFileSize)
         {
             // Arrange
             // Note: Use unique output file name to ensure no collision if tests run in parallel.
-            var inputFilePath = GetTestPath(fileName);
-            var compressedFilePath = GetTestPath(fileName + ".huf");
-            var inflatedFilePath = GetTestPath(inputFilePath + ".inf");
+            var inputFilePath = Utilities.GetTestPath(fileName);
+            var compressedFilePath = Utilities.GetTestPath(fileName + ".huf");
+            var inflatedFilePath = Utilities.GetTestPath(inputFilePath + ".inf");
 
             // Best-effor attempt to clean up temporary files from previous run
             // We do it here instead of at the end of the test to avoid pesky race
@@ -59,27 +54,9 @@
 
             // Assert
             Assert.Equal(inputFileInfo.Length, inflatedFileInfo.Length);
-            var originalHash = GetFileHash(fileName);
-            var inflatedHash = GetFileHash(inflatedFilePath);
+            var originalHash = Utilities.GetFileHash(fileName);
+            var inflatedHash = Utilities.GetFileHash(inflatedFilePath);
             Assert.Equal(originalHash, inflatedHash);
-        }
-
-        private static string GetTestPath(string relativePath)
-        {
-            var codeBaseUrl = new Uri(Assembly.GetExecutingAssembly().Location);
-            var codeBasePath = Uri.UnescapeDataString(codeBaseUrl.AbsolutePath);
-            var dirPath = Path.GetDirectoryName(codeBasePath);
-            return Path.Combine(dirPath!, TestDataFolderName, relativePath);
-        }
-
-        private static string GetFileHash(string fileName)
-        {
-            using (FileStream fileStream = File.OpenRead(GetTestPath(fileName)))
-            {
-                var crc32 = new Crc32();
-                crc32.Append(fileStream);
-                return Encoding.UTF8.GetString(crc32.GetCurrentHash());
-            }
         }
     }
 }
