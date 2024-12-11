@@ -20,18 +20,12 @@ namespace HuffmanCompressorLib
             multiplier = 1;
 
             // Initialize the dictionaries to make the code more straightforward in the rest of the class.
-            for (var i = byte.MinValue; i <= byte.MaxValue; i++)
+            // Avoid overflow of counter that would lead to an infinite loop using an int
+            // https://stackoverflow.com/questions/43800147/iterating-from-minvalue-to-maxvalue-with-overflow
+            for (int i = byte.MinValue; i <= byte.MaxValue; i++)
             {
-                this.moduloCounter.Add(i, 0);
-                this.frequencies.Add(i, 0);
-
-                // Avoid overflow of counter that would lead to an infinite loop
-                // https://stackoverflow.com/questions/43800147/iterating-from-minvalue-to-maxvalue-with-overflow
-                // Note: another alternative would be to use an int index and cast to byte
-                if (i == byte.MaxValue)
-                {
-                    break;
-                }
+                this.moduloCounter.Add((byte)i, 0);
+                this.frequencies.Add((byte)i, 0);
             }
         }
 
@@ -93,20 +87,12 @@ namespace HuffmanCompressorLib
         /// <returns>Key value pair enumaration of non-zero frequencies</returns>
         public IEnumerable<KeyValuePair<byte, UInt32>> GetEnumerator()
         {
-            for (byte b = byte.MinValue; b <= byte.MaxValue; b++)
+            for (int b = byte.MinValue; b <= byte.MaxValue; b++)
             {
-                var frequency = this.GetFrequency(b);
+                var frequency = this.GetFrequency((byte)b);
                 if (frequency > 0)
                 {
-                    yield return new KeyValuePair<byte, UInt32>(b, frequency);
-                }
-
-                // Avoid overflow of counter that would lead to an infinite loop
-                // https://stackoverflow.com/questions/43800147/iterating-from-minvalue-to-maxvalue-with-overflow
-                // Note: another alternative would be to use an int index and cast to byte
-                if (b == byte.MaxValue)
-                {
-                    break;
+                    yield return new KeyValuePair<byte, UInt32>((byte)b, frequency);
                 }
             }
         }
