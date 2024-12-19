@@ -1,10 +1,20 @@
 # Huffman compressor
 
-Fully functional lossless compressor/decompressor using the Huffman prefix code algorithm.
-Can work over any file format, text or binary.
+Fully functional lossless compressor/decompressor using the [Huffman prefix code algorithm](https://en.wikipedia.org/wiki/Huffman_coding).
+Can work over any file format, text or binary, on an arbitrarily large file.
 Data structures used:
-- Priority queue
+- Priority queue (Min heap)
 - Binary tree
 - Dictionary
 
-Reference: https://en.wikipedia.org/wiki/Huffman_coding
+This implementation is a fully-functional file compressor/inflator written in C# 12 (.Net 8).  Most implementations you will find (especially in academic settings) limit themselves to displaying the compressed output as a string of 1s and 0s in a text container.  By contrast, my implementation actually encodes the bit representation of each character into bytes of data to an output binary file. I achieved this using the bit manipulation operands from C#, which in turn are derived from those of C.  One can write a 1 to a byte by using the “|” or bit operand on the destination byte using a mask as the second operand.  The mask can be built using the ”>>” bitwise shift operand upon a 0x01 byte constant.
+
+To inflate the file, there must be sufficient information to be able to rebuild the encoding for each character.  I achieved this by storing the frequency table to the destination file (optimizing for characters that were actually found in the input file only).  Upon inflation, the frequency table will be loaded and from it, the encoding can be rebuilt.  This has the side effect of adding a bit of overhead to the compressed file, which is more of an issue for smaller files.
+
+While coding the solution, I challenged myself to treat the resulting code as production code.  This meant using robust exception handling and attention to edge cases, such as handling of very large files which are fed as inputs.  One of the first activities that are done during compression is building of the frequency table by counting the occurrence of each byte.  I use a 4-byte unsigned int for this, which theoretically would overflow back to 0 if the frequency counter encounters more than 2^32 (4,294,967,295) characters for a given character (4GB).  Even though this is indeed an edge case, I still wanted to remove any limitation that would prevent the compressor from being able to process an arbitrarily large file.  This problem baffled me for some time, until I came up with the idea of applying a “rebase” operation, where upon approaching the overflow, I divide each frequency in the frequency table by 2, allowing to preserve the relative frequency of each character, while enabling continuation of the frequency counting activity.
+
+Another challenge I solved was how to signal to the inflate operation when the last byte of encoded data has been extracted.  The binary file will always have a number of bits multiple of 8, however some of the bits on the last byte may actually be bytes of padding, given that the binary encoding of compressed data is not guaranteed to be in multiples of 8 (Example: ‘a’ character may be encoded as “010” string of 3 bits).  The straightforward approach would be to embed in the resulting file the count of bytes of data to be extracted, but again, that may decay into an overlow problem for large files.  I founn an elegant solution to this, which is to create a unique mapping to an “end of file” character, as a character with frequency 1.  When this character is decoded, the inflation operation can stop, with no dependency on a counter that can overflow.  Again, most academic implementation of the Huffman compressor overlook these potentially critical scenarios.  This same approach can be used to mint any number of additional control characters that may be desired.
+
+I structured the code in a “Core” library assembly project, with 2 separate exe projects as presentation layers, one a Console-application and the other a Windows Form GUI application.  In doing so, I verified that the code had proper decoupling, where the core library was completely devoid of dependencies from the presentation layer.
+Another principle I followed was writing testable code.  For this, I authored each class from the core library project using dependency injection and authored a robust set of test cases in Visual Studio using the XUnit framework and the Moq library.
+
