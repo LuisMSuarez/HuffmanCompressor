@@ -36,26 +36,6 @@
             Assert.Throws<ArgumentException>(() => compressor.Compress("inputFile.txt", string.Empty));
         }
 
-        [Theory]
-        [InlineData("smallfile.txt")]
-        [InlineData("emptyfile.txt")]
-        [InlineData("singleCharacter.txt")]
-        [InlineData("wordFile.docx")]
-        public void CompressTest(string fileName)
-        {
-            // Arrange
-            var inputFilePath = Utilities.GetTestPath(fileName);
-            var compressedFilePath = Utilities.GetTestPath(fileName + ".huf");
-
-            var compressor = new HuffmanCompressor();
-
-            // Act
-            compressor.Compress(inputFilePath, compressedFilePath);
-
-            // Assert
-            Assert.True(File.Exists(compressedFilePath));
-        }
-
         [Fact]
         public void InflateThrowsExceptionForWhitespaceInputFileName()
         {
@@ -77,11 +57,11 @@
         }
 
         [Theory]
-        [InlineData("smallfile.txt")]
-        [InlineData("emptyfile.txt")]
-        [InlineData("singleCharacter.txt")]
-        [InlineData("wordFile.docx")]
-        public void InflateTest(string fileName)
+        [InlineData("Smallfile.txt")]
+        [InlineData("Emptyfile.txt")]
+        [InlineData("SingleCharacter.txt")]
+        [InlineData("WordFile.docx")]
+        public void CompressAndInflateTest(string fileName)
         {
             // Arrange
             var inputFilePath = Utilities.GetTestPath(fileName);
@@ -101,6 +81,13 @@
 
             // Assert
             Assert.True(File.Exists(inflatedFilePath));
+            var inputFileInfo = new FileInfo(inputFilePath);
+            var inflatedFileInfo = new FileInfo(inflatedFilePath);
+            Assert.Equal(inputFileInfo.Length, inflatedFileInfo.Length);
+
+            var originalHash = Utilities.GetFileHash(fileName);
+            var inflatedHash = Utilities.GetFileHash(inflatedFilePath);
+            Assert.Equal(originalHash, inflatedHash);
         }
     }
 }

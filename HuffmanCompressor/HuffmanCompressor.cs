@@ -123,7 +123,8 @@
         {
             using (var inputStream = File.OpenRead(inputFilePath))
             {
-                using (var outputStream = File.OpenWrite(outputFilePath))
+                // Open a filestream to the destination (compressed) file.  If the file already exists, it will be overwritten.
+                using (var outputStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write))
                 {
                     this.WriteFrequencyDictionary(outputStream);
 
@@ -200,7 +201,8 @@
 
         private void InflateInternal(FileStream inputStream, string outputFilePath)
         {
-            using (var outputStream = File.OpenWrite(outputFilePath))
+            // Open a filestream to the destination (uncompressed) file.  If the file already exists, it will be overwritten.
+            using (var outputStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write))
             {
                 // Special case if input file was empty, nothing to do
                 if (this.frequencyCounter.GetEnumerator().Count() == 0)

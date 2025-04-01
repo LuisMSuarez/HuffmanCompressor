@@ -5,10 +5,10 @@
     public class EndToEndTests
     {
         [Theory]
-        [InlineData("smallfile.txt", true)]
-        [InlineData("emptyfile.txt", false)]
-        [InlineData("singleCharacter.txt", false)]
-        [InlineData("wordFile.docx", false)]
+        [InlineData("E2E-SmallFile.txt", true)]
+        [InlineData("E2E-EmptyFile.txt", false)]
+        [InlineData("E2E-SingleCharacter.txt", false)]
+        [InlineData("E2E-WordFile.docx", false)]
         public void CompressTest(string fileName, bool verifySmallerCompressedFileSize)
         {
             // Arrange
@@ -16,19 +16,6 @@
             var inputFilePath = Utilities.GetTestPath(fileName);
             var compressedFilePath = Utilities.GetTestPath(fileName + ".huf");
             var inflatedFilePath = Utilities.GetTestPath(inputFilePath + ".inf");
-
-            // Best-effor attempt to clean up temporary files from previous run
-            // We do it here instead of at the end of the test to avoid pesky race
-            // conditions that happen if we try to delete a file that was just created
-            try
-            {
-                File.Delete(compressedFilePath);
-                File.Delete(inflatedFilePath);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
 
             // Act
             Program.Main(["compress", inputFilePath, compressedFilePath]);
