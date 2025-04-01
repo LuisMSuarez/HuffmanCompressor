@@ -7,12 +7,20 @@ using System.Threading.Tasks;
 
 namespace HuffmanCompressorLib
 {
+    /// <summary>
+    /// Class to count the relative frequency of each byte in a stream of data.
+    /// There is no upper bound on the number of bytes that can be counted.
+    /// If the counter reaches the maximum value, the class will rebase all of the frequencies to avoid overflows.
+    /// </summary>
     internal class FrequencyCounter
     {
         private readonly IDictionary<byte, UInt32> moduloCounter;
         private readonly IDictionary<byte, UInt32> frequencies;
         private int multiplier;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FrequencyCounter"/> class.
+        /// </summary>
         public FrequencyCounter()
         {
             this.moduloCounter = new Dictionary<byte, UInt32>();
@@ -29,6 +37,10 @@ namespace HuffmanCompressorLib
             }
         }
 
+        /// <summary>
+        /// Increment the frequency of a byte by 1.
+        /// </summary>
+        /// <param name="value">The value to increment the frequency of.</param>
         public void Increment(byte value)
         {
             // Check to see if we have reached the rare theoretic limit for frequency counting.
@@ -57,12 +69,22 @@ namespace HuffmanCompressorLib
             }
         }
 
+        /// <summary>
+        /// Set the frequency of a byte to a specific value.
+        /// </summary>
+        /// <param name="value">The value to set.</param>
+        /// <param name="frequency">The frequency to set.</param>
         public void SetFrequency(byte value, UInt32 frequency)
         {
             this.frequencies[(byte)value] = frequency;
             this.moduloCounter[(byte)value] = 0;
         }
 
+        /// <summary>
+        /// Get the frequency of a byte.
+        /// </summary>
+        /// <param name="value">The value to query the frequency of</param>
+        /// <returns>Frequency of the value.</returns>
         public UInt32 GetFrequency(byte value)
         {
             // First check for the case that the frequency counter has not yet been

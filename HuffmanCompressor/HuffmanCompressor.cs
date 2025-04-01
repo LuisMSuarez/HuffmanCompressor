@@ -4,6 +4,9 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    /// <summary>
+    /// Class that implements the Huffman compression algorithm.
+    /// </summary>
     public class HuffmanCompressor : IFileCompressor
     {
         private FrequencyCounter frequencyCounter;
@@ -15,6 +18,9 @@
         /// </summary>
         private const short EndOfFileCode = -1;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HuffmanCompressor"/> class.
+        /// </summary>
         public HuffmanCompressor()
         {
             this.frequencyCounter = new FrequencyCounter();
