@@ -4,6 +4,9 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    /// <summary>
+    /// Class that implements the Huffman compression algorithm.
+    /// </summary>
     public class HuffmanCompressor : IFileCompressor
     {
         private FrequencyCounter frequencyCounter;
@@ -15,6 +18,9 @@
         /// </summary>
         private const short EndOfFileCode = -1;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HuffmanCompressor"/> class.
+        /// </summary>
         public HuffmanCompressor()
         {
             this.frequencyCounter = new FrequencyCounter();
@@ -123,7 +129,8 @@
         {
             using (var inputStream = File.OpenRead(inputFilePath))
             {
-                using (var outputStream = File.OpenWrite(outputFilePath))
+                // Open a filestream to the destination (compressed) file.  If the file already exists, it will be overwritten.
+                using (var outputStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write))
                 {
                     this.WriteFrequencyDictionary(outputStream);
 
@@ -200,7 +207,8 @@
 
         private void InflateInternal(FileStream inputStream, string outputFilePath)
         {
-            using (var outputStream = File.OpenWrite(outputFilePath))
+            // Open a filestream to the destination (uncompressed) file.  If the file already exists, it will be overwritten.
+            using (var outputStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write))
             {
                 // Special case if input file was empty, nothing to do
                 if (this.frequencyCounter.GetEnumerator().Count() == 0)

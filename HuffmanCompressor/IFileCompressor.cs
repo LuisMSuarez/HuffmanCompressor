@@ -1,5 +1,8 @@
 ﻿namespace HuffmanCompressorLib
 {
+    /// <summary>
+    /// Interface for file compression and decompression.
+    /// </summary>
     public interface IFileCompressor
     {
         void Compress(string inputFilePath, string outputFilePath);

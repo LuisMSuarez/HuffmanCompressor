@@ -2,11 +2,17 @@
 {
     using HuffmanCompressorLib;
 
-    public static class Program
+    /// <summary>
+    /// Main entry point for the HuffmanCompressorCmd console application.
+    /// </summary>
+    public class Program
     {
-        private static IFileCompressor _compressor;
+        private IFileCompressor _compressor;
 
-        static Program()
+        /// <summary>
+        /// Constructor of the Program class.
+        /// </summary>
+        public Program()
         {
             _compressor = new HuffmanCompressor();
         }
@@ -15,12 +21,22 @@
         /// Internal method intended for the unit tests to be able to inject a mock interface for testing purposes.
         /// </summary>
         /// <param name="compressor">Instance of the compressor interface.</param>
-        internal static void SetCompressorReference(IFileCompressor compressor)
+        internal void SetCompressorReference(IFileCompressor compressor)
         {
             _compressor = compressor;
         }
 
-        public static void Main(string[] args)
+        /// <summary>
+        /// The main entry point (Main method) for the application always needs to be declared as static.
+        /// That means that it cannot access non-static members of the class, such as _compressor.
+        /// Declaring the _compressor member as static would create a single instance of the compressor for all instances of the Program class.
+        /// This would be a problem if the Program class was used in a multi-threaded environment, such as when unit tests are run, where we
+        /// may run parallel compression jobs or even want to inject a mock compressor for testing purposes.
+        /// To avoid this, we create the Run wrapper as non-static and have Main create an instance of the Program class to invoke it.
+        /// </summary>
+        /// <param name="args">Program args</param>
+        /// <exception cref="ArgumentException"></exception>
+        public void Run(string[] args)
         {
             const string usageString = "Usage: [compress|inflate] [input file path] [output file path]";
 
@@ -42,6 +58,16 @@
                     Console.WriteLine(usageString);
                     throw new ArgumentException(usageString);
             }
+        }
+
+        /// <summary>
+        /// Main entry point for the HuffmanCompressorCmd console application.
+        /// </summary>
+        /// <param name="args">Program arguments.</param>
+        public static void Main(string[] args)
+        {
+            var program = new Program();
+            program.Run(args);
         }
     }
 }
