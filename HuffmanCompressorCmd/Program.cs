@@ -2,11 +2,11 @@
 {
     using HuffmanCompressorLib;
 
-    public static class Program
+    public class Program
     {
-        private static IFileCompressor _compressor;
+        private IFileCompressor _compressor;
 
-        static Program()
+        public Program()
         {
             _compressor = new HuffmanCompressor();
         }
@@ -15,12 +15,12 @@
         /// Internal method intended for the unit tests to be able to inject a mock interface for testing purposes.
         /// </summary>
         /// <param name="compressor">Instance of the compressor interface.</param>
-        internal static void SetCompressorReference(IFileCompressor compressor)
+        internal void SetCompressorReference(IFileCompressor compressor)
         {
             _compressor = compressor;
         }
 
-        public static void Main(string[] args)
+        public void Run(string[] args)
         {
             const string usageString = "Usage: [compress|inflate] [input file path] [output file path]";
 
@@ -42,6 +42,12 @@
                     Console.WriteLine(usageString);
                     throw new ArgumentException(usageString);
             }
+        }
+
+        public static void Main(string[] args)
+        {
+            var program = new Program();
+            program.Run(args);
         }
     }
 }
