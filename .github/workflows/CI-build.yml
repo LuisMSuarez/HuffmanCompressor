@@ -75,14 +75,18 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
+    - name: Build
+      run: dotnet build --no-restore
+    
     # Execute all unit tests in the solution
-    - name: Execute unit tests
-      run: dotnet test
+    - name: Test with the dotnet CLI
+      run: dotnet test --no-build --logger trx --results-directory "TestResults-${{ matrix.configuration }}"
 
     # Upload the build artifacts: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
+      # Use always() to always run this step to publish test results when there are test failures
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: build-artifacts
+        name: build-artifacts-${{matrix.configuration}}
         path: .
