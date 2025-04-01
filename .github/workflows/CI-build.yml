@@ -76,7 +76,7 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     - name: Build
-      run: dotnet build
+      run: dotnet build --configuration ${{matrix.configuration}} --verbosity detailed
     
     # Execute all unit tests in the solution
     - name: Test with the dotnet CLI
