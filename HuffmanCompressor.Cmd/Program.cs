@@ -1,4 +1,7 @@
 ﻿namespace HuffmanCompressor.Cmd;
+
+using System;
+using Microsoft.Extensions.DependencyInjection;
 using HuffmanCompressor.Lib;
 
 /// <summary>
@@ -11,18 +14,20 @@ public class Program
     /// <summary>
     /// Constructor of the Program class.
     /// </summary>
-    public Program()
+    public Program(IFileCompressor compressor)
     {
-        _compressor = new HuffmanCompressor();
+        _compressor = compressor;
     }
 
     /// <summary>
-    /// Internal method intended for the unit tests to be able to inject a mock interface for testing purposes.
+    /// The main entry point (Main method) for the application.
     /// </summary>
-    /// <param name="compressor">Instance of the compressor interface.</param>
-    internal void SetCompressorReference(IFileCompressor compressor)
+    /// <param name="args">Program arguments.</param>
+    public static void Main(string[] args)
     {
-        _compressor = compressor;
+        var serviceProvider = ConfigureServices();
+        var program = new Program(serviceProvider.GetRequiredService<IFileCompressor>());
+        program.Run(args);
     }
 
     /// <summary>
@@ -60,12 +65,16 @@ public class Program
     }
 
     /// <summary>
-    /// Main entry point for the HuffmanCompressorCmd console application.
+    /// Configures dependency injection container.
     /// </summary>
-    /// <param name="args">Program arguments.</param>
-    public static void Main(string[] args)
+    /// <returns>Service provider with registered services.</returns>
+    private static IServiceProvider ConfigureServices()
     {
-        var program = new Program();
-        program.Run(args);
+        var services = new ServiceCollection();
+
+        // Register IFileCompressor with HuffmanCompressor
+        services.AddTransient<IFileCompressor, HuffmanCompressor>();
+
+        return services.BuildServiceProvider();
     }
 }

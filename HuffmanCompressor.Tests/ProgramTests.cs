@@ -11,8 +11,7 @@ public class ProgramTests
         // Arrange
         var mockCompressor = new Mock<IFileCompressor>(MockBehavior.Strict);
         mockCompressor.Setup(c => c.Compress(It.IsAny<string>(), It.IsAny<string>()));
-        var program = new Program();
-        program.SetCompressorReference(mockCompressor.Object);
+        var program = new Program(mockCompressor.Object);
 
         // Act
         program.Run(["compress", "input.txt", "output.bin" ]);
@@ -30,8 +29,7 @@ public class ProgramTests
         // Arrange
         var mockCompressor = new Mock<IFileCompressor>(MockBehavior.Strict);
         mockCompressor.Setup(c => c.Inflate(It.IsAny<string>(), It.IsAny<string>()));
-        var program = new Program();
-        program.SetCompressorReference(mockCompressor.Object);
+        var program = new Program(mockCompressor.Object);
 
         // Act
         program.Run(["inflate", "input.bin", "output.txt"]);
@@ -48,8 +46,7 @@ public class ProgramTests
     {
         // Arrange
         var mockCompressor = new Mock<IFileCompressor>(MockBehavior.Strict);
-        var program = new Program();
-        program.SetCompressorReference(mockCompressor.Object);
+        var program = new Program(mockCompressor.Object);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(
@@ -63,8 +60,7 @@ public class ProgramTests
     {
         // Arrange
         var mockCompressor = new Mock<IFileCompressor>(MockBehavior.Strict);
-        var program = new Program();
-        program.SetCompressorReference(mockCompressor.Object);
+        var program = new Program(mockCompressor.Object);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(
