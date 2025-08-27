@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HuffmanCompressorCmd\HuffmanCompressor.Cmd.csproj" />
-    <ProjectReference Include="..\HuffmanCompressor\HuffmanCompressor.Lib.csproj" />
+    <ProjectReference Include="..\HuffmanCompressor.Cmd\HuffmanCompressor.Cmd.csproj" />
+    <ProjectReference Include="..\HuffmanCompressor.Lib\HuffmanCompressor.Lib.csproj" />
   </ItemGroup>
 
   <ItemGroup>
