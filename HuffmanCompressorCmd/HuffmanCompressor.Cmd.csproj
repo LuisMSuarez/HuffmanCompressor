@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HuffmanCompressor\HuffmanCompressorLib.csproj" />
+    <ProjectReference Include="..\HuffmanCompressor\HuffmanCompressor.Lib.csproj" />
   </ItemGroup>
 
 </Project>

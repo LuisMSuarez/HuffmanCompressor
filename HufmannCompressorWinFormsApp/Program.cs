@@ -1,4 +1,4 @@
-namespace HufmannCompressorWinFormsApp
+namespace HufmannCompressor.WinFormsApp
 {
     internal static class Program
     {

@@ -17,5 +17,5 @@ using System.Runtime.InteropServices;
 
 [assembly: Guid("29445467-fd04-458f-9bd4-fcd842b0468d")]
 
-[assembly: InternalsVisibleTo("HuffmanCompressorTests")]
+[assembly: InternalsVisibleTo("HuffmanCompressor.Tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
