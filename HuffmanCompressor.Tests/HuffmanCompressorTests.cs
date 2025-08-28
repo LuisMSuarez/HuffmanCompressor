@@ -1,5 +1,6 @@
 ﻿namespace HuffmanCompressor.Tests;
 using HuffmanCompressor.Lib;
+using Moq;
 
 public class HuffmanCompressorTests
 {
@@ -9,7 +10,7 @@ public class HuffmanCompressorTests
     public void ConstructorTest()
     {
         // Arrange & Act
-        var compressor = new HuffmanCompressor();
+        var compressor = new HuffmanCompressor(Mock.Of<IFrequencyCounter>());
 
         // Assert
         Assert.NotNull(compressor);
@@ -19,7 +20,7 @@ public class HuffmanCompressorTests
     public void CompressThrowsExceptionForWhitespaceInputFileName()
     {
         // Arrange
-        var compressor = new HuffmanCompressor();
+        var compressor = new HuffmanCompressor(Mock.Of<IFrequencyCounter>());
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => compressor.Compress(string.Empty, "outputFile.bin"));
@@ -29,7 +30,7 @@ public class HuffmanCompressorTests
     public void CompressThrowsExceptionForWhitespaceOutputFileName()
     {
         // Arrange
-        var compressor = new HuffmanCompressor();
+        var compressor = new HuffmanCompressor(Mock.Of<IFrequencyCounter>());
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => compressor.Compress("inputFile.txt", string.Empty));
@@ -39,7 +40,7 @@ public class HuffmanCompressorTests
     public void InflateThrowsExceptionForWhitespaceInputFileName()
     {
         // Arrange
-        var compressor = new HuffmanCompressor();
+        var compressor = new HuffmanCompressor(Mock.Of<IFrequencyCounter>());
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => compressor.Inflate(string.Empty, "outputFile.bin"));
@@ -49,7 +50,7 @@ public class HuffmanCompressorTests
     public void InflateThrowsExceptionForWhitespaceOutputFileName()
     {
         // Arrange
-        var compressor = new HuffmanCompressor();
+        var compressor = new HuffmanCompressor(Mock.Of<IFrequencyCounter>());
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => compressor.Inflate("inputFile.huf", string.Empty));
@@ -67,7 +68,7 @@ public class HuffmanCompressorTests
         var compressedFilePath = Utilities.GetTestPath(fileName + ".huf");
         var inflatedFilePath = Utilities.GetTestPath(compressedFilePath + ".inf");
 
-        var compressor = new HuffmanCompressor();
+        var compressor = new HuffmanCompressor(new FrequencyCounter());
 
         // Act
         compressor.Compress(inputFilePath, compressedFilePath);

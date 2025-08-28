@@ -5,7 +5,7 @@
 /// There is no upper bound on the number of bytes that can be counted.
 /// If the counter reaches the maximum value, the class will rebase all of the frequencies to avoid overflows.
 /// </summary>
-internal class FrequencyCounter
+public class FrequencyCounter : IFrequencyCounter
 {
     private readonly IDictionary<byte, UInt32> moduloCounter;
     private readonly IDictionary<byte, UInt32> frequencies;
@@ -119,7 +119,7 @@ internal class FrequencyCounter
     /// </summary>
     private void Rebase()
     {
-        this.frequencies.ToList().ForEach( kvp => this.frequencies[kvp.Key] /= 2  + 1);
+        this.frequencies.ToList().ForEach(kvp => this.frequencies[kvp.Key] /= 2 + 1);
         this.multiplier *= 2;
     }
 

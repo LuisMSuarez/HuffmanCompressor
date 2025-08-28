@@ -17,7 +17,7 @@ public partial class MainForm : Form
             return;
         }
 
-        var compressor = new HuffmanCompressor();
+        var compressor = new HuffmanCompressor(new FrequencyCounter());
         toolStripStatusLabel.Text = "Compressing...";
         compressor.Compress(openFileDialog.FileName, openFileDialog.FileName + ".huf");
         toolStripStatusLabel.Text = "Ready";
@@ -33,7 +33,7 @@ public partial class MainForm : Form
             return;
         }
 
-        var compressor = new HuffmanCompressor();
+        var compressor = new HuffmanCompressor(new FrequencyCounter());
         toolStripStatusLabel.Text = "Inflating...";
         compressor.Inflate(openFileDialog.FileName, openFileDialog.FileName + ".inflated");
         toolStripStatusLabel.Text = "Ready";

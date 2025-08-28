@@ -9,7 +9,7 @@ using System.Linq;
 /// </summary>
 public class HuffmanCompressor : IFileCompressor
 {
-    private FrequencyCounter frequencyCounter;
+    private IFrequencyCounter frequencyCounter;
     private IDictionary<short, string> binaryCodeMappings;
     private Node<short>? treeRoot;
 
@@ -21,9 +21,9 @@ public class HuffmanCompressor : IFileCompressor
     /// <summary>
     /// Initializes a new instance of the <see cref="HuffmanCompressor"/> class.
     /// </summary>
-    public HuffmanCompressor()
+    public HuffmanCompressor(IFrequencyCounter frequencyCounter)
     {
-        this.frequencyCounter = new FrequencyCounter();
+        this.frequencyCounter = frequencyCounter ?? throw new ArgumentNullException(nameof(frequencyCounter));
         this.binaryCodeMappings = new Dictionary<short, string>();
     }
 
