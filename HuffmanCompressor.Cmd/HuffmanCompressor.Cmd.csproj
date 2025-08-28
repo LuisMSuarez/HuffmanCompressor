@@ -8,7 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HuffmanCompressor\HuffmanCompressorLib.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HuffmanCompressor.Lib\HuffmanCompressor.Lib.csproj" />
   </ItemGroup>
 
 </Project>

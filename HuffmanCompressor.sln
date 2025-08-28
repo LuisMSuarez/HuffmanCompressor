@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuffmanCompressorLib", "HuffmanCompressor\HuffmanCompressorLib.csproj", "{93160A18-48C3-4AB8-A9C9-2EA2D2C46B01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuffmanCompressor.Lib", "HuffmanCompressor.Lib\HuffmanCompressor.Lib.csproj", "{93160A18-48C3-4AB8-A9C9-2EA2D2C46B01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuffmanCompressorTests", "HuffmanCompressorTests\HuffmanCompressorTests.csproj", "{304D0AF6-D701-40E9-8A2F-E2508A12ED5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuffmanCompressor.Tests", "HuffmanCompressor.Tests\HuffmanCompressor.Tests.csproj", "{304D0AF6-D701-40E9-8A2F-E2508A12ED5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HuffmanCompressorWinFormsApp", "HufmannCompressorWinFormsApp\HuffmanCompressorWinFormsApp.csproj", "{78D7EB54-F5CB-45E8-B293-2B95EA522589}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HuffmanCompressor.WinFormsApp", "HufmannCompressor.WinFormsApp\HuffmanCompressor.WinFormsApp.csproj", "{78D7EB54-F5CB-45E8-B293-2B95EA522589}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HuffmanCompressorCmd", "HuffmanCompressorCmd\HuffmanCompressorCmd.csproj", "{567B674B-79D9-4331-A6D6-A13735DA3327}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HuffmanCompressor.Cmd", "HuffmanCompressor.Cmd\HuffmanCompressor.Cmd.csproj", "{567B674B-79D9-4331-A6D6-A13735DA3327}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
