@@ -7,14 +7,35 @@
 /// </summary>
 public class FrequencyCounter : IFrequencyCounter
 {
-    private readonly IDictionary<byte, UInt32> moduloCounter;
-    private readonly IDictionary<byte, UInt32> frequencies;
+    /// <summary>
+    /// Frequency counter that performs count modulo the multiplier.
+    /// </summary>
+    private Dictionary<byte, UInt32>? moduloCounter;
+
+    /// <summary>
+    /// Frequency counter that is bumped up each time the modulo counter
+    /// hits the multiplier.
+    /// </summary>
+    private Dictionary<byte, UInt32>? frequencies;
+
+    /// <summary>
+    /// Initially set to 1, gets bumped up exponentially each time the
+    /// counters need to be rebased.
+    /// </summary>
     private int multiplier;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FrequencyCounter"/> class.
     /// </summary>
     public FrequencyCounter()
+    {
+        Initialize();
+    }
+
+    /// <summary>
+    /// Resets all counters.
+    /// </summary>
+    public void Initialize()
     {
         this.moduloCounter = new Dictionary<byte, UInt32>();
         this.frequencies = new Dictionary<byte, UInt32>();
@@ -36,29 +57,31 @@ public class FrequencyCounter : IFrequencyCounter
     /// <param name="value">The value to increment the frequency of.</param>
     public void Increment(byte value)
     {
+        EnsureInitialized();
+
         // Check to see if we have reached the rare theoretic limit for frequency counting.
         // In that case, the best we can do is stop counting to avoid an overlfow back to 0.
         // Note: this would still mean having read 16 million TB of a single character!
-        if (this.moduloCounter[value] == UInt32.MaxValue &&
-            this.frequencies[value] == UInt32.MaxValue)
+        if (this.moduloCounter![value] == UInt32.MaxValue &&
+            this.frequencies![value] == UInt32.MaxValue)
         {
             return;
         }
 
-        this.moduloCounter[value]++;
-        if (this.moduloCounter[value] == multiplier)
+        this.moduloCounter![value]++;
+        if (this.moduloCounter![value] == multiplier)
         {
             // If the counter is about to overflow, we call the Rebase function
-            if (this.frequencies[value] == UInt32.MaxValue)
+            if (this.frequencies![value] == UInt32.MaxValue)
             {
                 this.Rebase();
             }
             else
             {
-                this.frequencies[value]++;
+                this.frequencies![value]++;
             }
 
-            this.moduloCounter[value] = 0;
+            this.moduloCounter![value] = 0;
         }
     }
 
@@ -69,8 +92,9 @@ public class FrequencyCounter : IFrequencyCounter
     /// <param name="frequency">The frequency to set.</param>
     public void SetFrequency(byte value, UInt32 frequency)
     {
-        this.frequencies[(byte)value] = frequency;
-        this.moduloCounter[(byte)value] = 0;
+        EnsureInitialized();
+        this.frequencies![value] = frequency;
+        this.moduloCounter![value] = 0;
     }
 
     /// <summary>
@@ -80,12 +104,14 @@ public class FrequencyCounter : IFrequencyCounter
     /// <returns>Frequency of the value.</returns>
     public UInt32 GetFrequency(byte value)
     {
+        EnsureInitialized();
+
         // First check for the case that the frequency counter has not yet been
         // bumped up, in that case, if we ever counted the value in the modulo counter, we must return
         // the smallest value possible, which is 1.
-        if (this.frequencies[value] == 0)
+        if (this.frequencies![value] == 0)
         {
-            if (this.moduloCounter[value] > 0)
+            if (this.moduloCounter![value] > 0)
             {
                 return 1;
             }
@@ -113,13 +139,25 @@ public class FrequencyCounter : IFrequencyCounter
     }
 
     /// <summary>
+    /// Verifies that the class has been initialized before use.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
+    private void EnsureInitialized()
+    {
+        if (this.frequencies == null || this.moduloCounter == null)
+        {
+            throw new InvalidOperationException("FrequencyCounter has not been initialized!");
+        }
+    }
+
+    /// <summary>
     /// Rebases all of the frequencies uniformly by dividing them by 2
     /// This allows us to handle very high counts without risk of overflowing and still
     /// preserving statistical accuracy.
     /// </summary>
     private void Rebase()
     {
-        this.frequencies.ToList().ForEach(kvp => this.frequencies[kvp.Key] /= 2 + 1);
+        this.frequencies!.ToList().ForEach(kvp => this.frequencies![kvp.Key] /= 2);
         this.multiplier *= 2;
     }
 
