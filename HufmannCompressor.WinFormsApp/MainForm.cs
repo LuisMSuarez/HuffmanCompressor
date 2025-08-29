@@ -3,8 +3,10 @@ using HuffmanCompressor.Lib;
 
 public partial class MainForm : Form
 {
-    public MainForm()
+    private readonly IFileCompressor compressor;
+    public MainForm(IFileCompressor compressor)
     {
+        this.compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
         InitializeComponent();
     }
 
@@ -17,9 +19,8 @@ public partial class MainForm : Form
             return;
         }
 
-        var compressor = new HuffmanCompressor(new FrequencyCounter(), new BitReader(), new BitWriter());
         toolStripStatusLabel.Text = "Compressing...";
-        compressor.Compress(openFileDialog.FileName, openFileDialog.FileName + ".huf");
+        this.compressor.Compress(openFileDialog.FileName, openFileDialog.FileName + ".huf");
         toolStripStatusLabel.Text = "Ready";
     }
 
@@ -33,9 +34,8 @@ public partial class MainForm : Form
             return;
         }
 
-        var compressor = new HuffmanCompressor(new FrequencyCounter(), new BitReader(), new BitWriter());
         toolStripStatusLabel.Text = "Inflating...";
-        compressor.Inflate(openFileDialog.FileName, openFileDialog.FileName + ".inflated");
+        this.compressor.Inflate(openFileDialog.FileName, openFileDialog.FileName + ".inflated");
         toolStripStatusLabel.Text = "Ready";
     }
 }
