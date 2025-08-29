@@ -3,17 +3,17 @@
 /// <summary>
 /// Provides functionality to write individual bits to an output file stream.
 /// </summary>
-internal class BitWriter
+public class BitWriter : IBitWriter
 {
     private int bitIndex;
     private byte currentByte;
-    private readonly FileStream fileHandle;
+    private FileStream? fileHandle;
 
     /// <summary>
-    /// Creates an instance of <see cref="BitWriter"/> class.
+    /// Performs initialization of the <see cref="BitWriter"/> class.
     /// </summary>
     /// <param name="fileHandle">File stream to which the writer will write bits to.</param>
-    public BitWriter(FileStream fileHandle) 
+    public void Initialize(FileStream fileHandle)
     {
         ArgumentNullException.ThrowIfNull(fileHandle);
         this.bitIndex = 0;
@@ -29,14 +29,18 @@ internal class BitWriter
     public void WriteBits(string bitString)
     {
         ArgumentNullException.ThrowIfNull(bitString);
+        if (this.fileHandle == null)
+        {
+            throw new InvalidOperationException("BitWriter has not been initialized with a valid file stream!");
+        }
 
         // Fill in currentByte from most significant bit to least significant bit by reading from input bitString
         // until the input bitString is exhausted.
         // As we fill out all available bits in currentByte, we flush it out to the file and start over with a fresh byte
-        for (int i = 0; i < bitString.Length; i++) 
+        for (int i = 0; i < bitString.Length; i++)
         {
             var bit = bitString[i];
-            switch(bit)
+            switch (bit)
             {
                 case '0':
                     break;
@@ -54,7 +58,7 @@ internal class BitWriter
             {
                 // currentByte has been exhausted for all of its 8 available bits
                 // commit to disk and mint a new byte to continue the process.
-                fileHandle.WriteByte(currentByte);
+                this.fileHandle.WriteByte(currentByte);
                 bitIndex = 0;
                 currentByte = 0x00;
             }
@@ -71,6 +75,11 @@ internal class BitWriter
     /// </summary>
     public void Flush()
     {
-        fileHandle.WriteByte(currentByte);
+        if (this.fileHandle == null)
+        {
+            throw new InvalidOperationException("BitWriter has not been initialized with a valid file stream!");
+        }
+
+        this.fileHandle.WriteByte(currentByte);
     }
 }

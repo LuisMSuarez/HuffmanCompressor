@@ -9,8 +9,10 @@ using System.Linq;
 /// </summary>
 public class HuffmanCompressor : IFileCompressor
 {
-    private FrequencyCounter frequencyCounter;
-    private IDictionary<short, string> binaryCodeMappings;
+    private readonly IFrequencyCounter frequencyCounter;
+    private readonly IBitReader bitReader;
+    private readonly IBitWriter bitWriter;
+    private Dictionary<short, string> binaryCodeMappings;
     private Node<short>? treeRoot;
 
     /// <summary>
@@ -21,9 +23,14 @@ public class HuffmanCompressor : IFileCompressor
     /// <summary>
     /// Initializes a new instance of the <see cref="HuffmanCompressor"/> class.
     /// </summary>
-    public HuffmanCompressor()
+    public HuffmanCompressor(
+        IFrequencyCounter frequencyCounter,
+        IBitReader bitReader,
+        IBitWriter bitWriter)
     {
-        this.frequencyCounter = new FrequencyCounter();
+        this.frequencyCounter = frequencyCounter ?? throw new ArgumentNullException(nameof(frequencyCounter));
+        this.bitReader = bitReader ?? throw new ArgumentNullException(nameof(bitReader));
+        this.bitWriter = bitWriter ?? throw new ArgumentNullException(nameof(bitWriter));
         this.binaryCodeMappings = new Dictionary<short, string>();
     }
 
@@ -67,7 +74,7 @@ public class HuffmanCompressor : IFileCompressor
 
     private void InitializeFrequencyDictionary(string inputFilePath)
     {
-        this.frequencyCounter = new FrequencyCounter();
+        this.frequencyCounter.Initialize();
         using (var inputStream = File.OpenRead(inputFilePath))
         {
             int inputByte;
@@ -134,7 +141,7 @@ public class HuffmanCompressor : IFileCompressor
             {
                 this.WriteFrequencyDictionary(outputStream);
 
-                var bitWriter = new BitWriter(outputStream);
+                bitWriter.Initialize(outputStream);
 
                 // Main loop to encode each byte in the input stream according to its binary code mapping
                 int inputByte;
@@ -174,7 +181,7 @@ public class HuffmanCompressor : IFileCompressor
 
     private FileStream ReadFrequencyDictionary(string inputFilePath)
     {
-        this.frequencyCounter = new FrequencyCounter();
+        this.frequencyCounter.Initialize();
         FileStream inputStream;
         try
         {
@@ -211,7 +218,7 @@ public class HuffmanCompressor : IFileCompressor
         using (var outputStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write))
         {
             // Special case if input file was empty, nothing to do
-            if (this.frequencyCounter.GetEnumerator().Count() == 0)
+            if (!this.frequencyCounter.GetEnumerator().Any())
             {
                 return;
             }
@@ -219,7 +226,7 @@ public class HuffmanCompressor : IFileCompressor
             // For decompression, we key off binary codes to obtain the corresponding byte, which is the opposite to what we do in compression.
             // This ensures that lookup for decompression has constant time complexity.
             var reverseBinaryCodeMappings = this.binaryCodeMappings?.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
-            var bitReader = new BitReader(inputStream);
+            this.bitReader.Initialize(inputStream);
             var endOfFileFound = false;
             while (!endOfFileFound)
             {
@@ -227,7 +234,7 @@ public class HuffmanCompressor : IFileCompressor
                 var binaryCodeMatch = false;
                 while (!binaryCodeMatch)
                 {
-                    var bit = bitReader.ReadNextBit();
+                    var bit = this.bitReader.ReadNextBit();
                     bitString = $"{bitString}{bit}";
                     if (reverseBinaryCodeMappings!.ContainsKey(bitString))
                     {

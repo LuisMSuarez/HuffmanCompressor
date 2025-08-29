@@ -74,7 +74,9 @@ public class Program
 
         // Register IFileCompressor with HuffmanCompressor
         services.AddTransient<IFileCompressor, HuffmanCompressor>();
-
+        services.AddTransient<IFrequencyCounter, FrequencyCounter>();
+        services.AddTransient<IBitReader, BitReader>();
+        services.AddTransient<IBitWriter, BitWriter>();
         return services.BuildServiceProvider();
     }
 }

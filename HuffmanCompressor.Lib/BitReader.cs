@@ -3,17 +3,17 @@
 /// <summary>
 /// Provides functionality to read individual bits from an input file stream.
 /// </summary>
-internal class BitReader
+public class BitReader : IBitReader
 {
     private int bitIndex;
     private byte currentByte;
-    private readonly FileStream fileHandle;
+    private FileStream? fileHandle;
 
     /// <summary>
-    /// Creates an instance of <see cref="BitReader"/> class.
+    /// Performs initialization of the <see cref="BitReader"/> class.
     /// </summary>
     /// <param name="fileHandle">File stream to which the reader will read bits from.</param>
-    public BitReader(FileStream fileHandle)
+    public void Initialize(FileStream fileHandle)
     {
         ArgumentNullException.ThrowIfNull(fileHandle);
         this.bitIndex = 8;
@@ -28,6 +28,11 @@ internal class BitReader
     /// <exception cref="EndOfStreamException">If the end of the stream is reached while attempting to read.</exception>
     public char ReadNextBit()
     {
+        if (this.fileHandle == null)
+        {
+            throw new InvalidOperationException("BitReader has not been initialized with a valid file stream!");
+        }
+       
         // Read 1 byte from the input file stream at a time, and use an index to return each bit from the byte.
         // When we get to the last bit, read the next byte and continue until end of file
         if (this.bitIndex >= 8)
@@ -43,7 +48,7 @@ internal class BitReader
 
         byte mask = (byte)(0x80 >> this.bitIndex++);
         return (this.currentByte & mask) == 0x00
-            ? '0' 
+            ? '0'
             : '1';
     }
 }
